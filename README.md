@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Loky Media web
 
-## Getting Started
+Next.js 16 + Tailwind v4 + shadcn/ui front end for the Loky Media DOOH marketplace, with a MySQL-backed
+vendor onboarding workflow (representative → admin review → vendor dashboard → customer listing).
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local   # then edit DATABASE_URL, JWT_SECRET, ENCRYPTION_KEY
+npm install
+npm run db:sync                    # creates the 12 tables (add -- --force to recreate)
+npm run db:seed                    # categories, staff logins, two demo vendors
+npm run dev                        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Seeded logins (all at `/login`):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Role           | Username               | Password      |
+|----------------|------------------------|---------------|
+| Admin          | `admin`                | `Admin@12345` |
+| Representative | `rep.anita`            | `Rep@12345`   |
+| Vendor         | `bulzads-demo`         | `Vendor@12345`|
+| Customer       | `customer@example.com` | `Customer@12345` |
+| Agency owner   | `aakash@mehramedia.in` | `Agency@12345` |
+| Agency member  | `sarah@mehramedia.in`  | `Agency@12345` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Agencies self-register at `/agency/register` (dev builds display the OTP on the verify page).
 
-## Learn More
+## Checks
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run typecheck
+npm run lint
+npm run e2e          # browser-driven lifecycle test; needs the dev server running and Google Chrome installed
+npm run e2e:edge     # edge cases: auth limits, validation, file permissions, post-approval billboards, mobile overflow
+npm run e2e:agency   # agency lifecycle: register → OTP → assessment → brand → proposal → quotation → work order → payments → live
+npm run e2e:all      # all suites, in order (edge suites build on the lifecycle run)
+E2E_HEADLESS=0 npm run e2e:all   # watch it happen in a visible Chrome window
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the layering, guards and state machine.
