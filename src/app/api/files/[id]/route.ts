@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Billboard, BillboardMedia, File as FileRow, Vendor, VendorDocument } from "@/db";
 import { getSession } from "@/lib/server/auth";
-import { readStoredFile } from "@/services/files";
+import { blobUrlOf, readStoredFile } from "@/services/files";
 
 /** Streams an uploaded file. Billboard media is public; everything else needs an owner, the rep, or an admin. */
 export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[id]">) {
@@ -22,6 +22,9 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[id]"
   }
 
   if (row.storageKey.startsWith("static:")) return NextResponse.redirect(new URL(row.storageKey.slice(7), _req.url));
+  // Public blobs are served straight from Vercel's CDN; private ones are proxied below after the auth check.
+  const blob = blobUrlOf(row);
+  if (blob && row.publicUrl) return NextResponse.redirect(blob, { status: 302, headers: { "Cache-Control": "public, max-age=31536000, immutable" } });
   const buf = await readStoredFile(row);
   return new NextResponse(new Uint8Array(buf), {
     headers: {

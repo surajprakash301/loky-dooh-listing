@@ -9,9 +9,9 @@ async function main() {
   const alter = process.argv.includes("--alter");
   await sequelize.authenticate();
   await sequelize.sync({ force, alter });
-  const [rows] = await sequelize.query("SHOW TABLES");
-  console.log(`${force ? "Recreated" : "Synced"} ${(rows as unknown[]).length} tables:`);
-  for (const r of rows as Record<string, string>[]) console.log("  -", Object.values(r)[0]);
+  const tables = await sequelize.getQueryInterface().showAllTables();
+  console.log(`${force ? "Recreated" : "Synced"} ${tables.length} tables (${sequelize.getDialect()}):`);
+  for (const t of tables) console.log("  -", typeof t === "string" ? t : (t as { tableName: string }).tableName);
   await sequelize.close();
 }
 main().catch((e) => {

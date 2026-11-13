@@ -1,12 +1,13 @@
 # Loky Media web
 
-Next.js 16 + Tailwind v4 + shadcn/ui front end for the Loky Media DOOH marketplace, with a MySQL-backed
+Next.js 16 + Tailwind v4 + shadcn/ui front end for the Loky Media DOOH marketplace, with a database-backed
 vendor onboarding workflow (representative → admin review → vendor dashboard → customer listing).
+Works on PostgreSQL (Neon) or MySQL 8; uploads go to local disk or Vercel Blob.
 
 ## Run locally
 
 ```bash
-cp .env.local.example .env.local   # then edit DATABASE_URL, JWT_SECRET, ENCRYPTION_KEY
+cp .env.local.example .env.local   # then edit DATABASE_URL (postgresql:// or mysql://), JWT_SECRET, ENCRYPTION_KEY
 npm install
 npm run db:sync                    # creates the 12 tables (add -- --force to recreate)
 npm run db:seed                    # categories, staff logins, two demo vendors
@@ -38,4 +39,12 @@ npm run e2e:all      # all suites, in order (edge suites build on the lifecycle 
 E2E_HEADLESS=0 npm run e2e:all   # watch it happen in a visible Chrome window
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the layering, guards and state machine.
+## Deploy
+
+```bash
+npx vercel login && npx neonctl auth   # once
+npm run deploy:vercel                  # Neon Postgres + Vercel + Vercel Blob, end to end
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the manual steps, other hosts and the known limits, and
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the layering, guards and state machine.

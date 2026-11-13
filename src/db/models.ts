@@ -41,9 +41,9 @@ import {
 export * from "@/lib/domain";
 
 const sequelize = getSequelize();
-const ID = { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true } as const;
-const FK = { type: DataTypes.INTEGER.UNSIGNED, allowNull: false } as const;
-const FK_NULL = { type: DataTypes.INTEGER.UNSIGNED, allowNull: true } as const;
+const ID = { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true } as const;
+const FK = { type: DataTypes.INTEGER, allowNull: false } as const;
+const FK_NULL = { type: DataTypes.INTEGER, allowNull: true } as const;
 
 /* ---------- users ---------- */
 
@@ -100,7 +100,7 @@ File.init(
     publicUrl: { type: DataTypes.STRING(500), allowNull: true },
     originalName: { type: DataTypes.STRING(255), allowNull: false },
     mimeType: { type: DataTypes.STRING(100), allowNull: false },
-    sizeBytes: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    sizeBytes: { type: DataTypes.INTEGER, allowNull: false },
     uploadedBy: { ...FK },
     createdAt: DataTypes.DATE(3),
   },
@@ -346,15 +346,15 @@ Billboard.init(
     widthFt: { type: DataTypes.DECIMAL(6, 2), allowNull: false },
     heightFt: { type: DataTypes.DECIMAL(6, 2), allowNull: false },
     pixelPitch: { type: DataTypes.STRING(10), allowNull: true },
-    refreshRateHz: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: true },
-    brightnessNits: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: true },
-    viewingAngleH: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: true },
-    viewingAngleV: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: true },
+    refreshRateHz: { type: DataTypes.SMALLINT, allowNull: true },
+    brightnessNits: { type: DataTypes.SMALLINT, allowNull: true },
+    viewingAngleH: { type: DataTypes.SMALLINT, allowNull: true },
+    viewingAngleV: { type: DataTypes.SMALLINT, allowNull: true },
     opsStart: { type: DataTypes.STRING(5), allowNull: false },
     opsEnd: { type: DataTypes.STRING(5), allowNull: false },
-    loopSeconds: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: false },
-    slotsPerLoop: { type: DataTypes.TINYINT.UNSIGNED, allowNull: false },
-    dailyImpressions: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 0 },
+    loopSeconds: { type: DataTypes.SMALLINT, allowNull: false },
+    slotsPerLoop: { type: DataTypes.SMALLINT, allowNull: false },
+    dailyImpressions: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     lokySense: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     description: { type: DataTypes.TEXT, allowNull: true },
     status: { type: DataTypes.ENUM(...BILLBOARD_STATUSES), allowNull: false, defaultValue: "draft" },
@@ -417,7 +417,7 @@ BillboardSlotPricing.init(
   {
     id: { ...ID },
     billboardId: { ...FK },
-    slotSeconds: { type: DataTypes.TINYINT.UNSIGNED, allowNull: false },
+    slotSeconds: { type: DataTypes.SMALLINT, allowNull: false },
     package: { type: DataTypes.ENUM(...PACKAGES), allowNull: false },
     listPrice: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
     offerPrice: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
@@ -459,7 +459,7 @@ ReviewSection.init(
     billboardId: { ...FK_NULL },
     status: { type: DataTypes.ENUM(...SECTION_STATUSES), allowNull: false, defaultValue: "pending" },
     remark: { type: DataTypes.TEXT, allowNull: true },
-    round: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: false, defaultValue: 1 },
+    round: { type: DataTypes.SMALLINT, allowNull: false, defaultValue: 1 },
     reviewedBy: { ...FK_NULL },
     reviewedAt: { type: DataTypes.DATE(3), allowNull: true },
     lastEditedAt: { type: DataTypes.DATE(3), allowNull: true },

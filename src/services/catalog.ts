@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { Billboard, BillboardMedia, BillboardSlotPricing, Category, File as FileRow, Vendor } from "@/db";
 import { formatImpressions } from "@/lib/format";
 import type { Billboard as CardBillboard } from "@/lib/data";
+import { likeOp } from "@/db/sequelize";
 import { fileUrl } from "./files";
 
 const PUBLIC_INCLUDE = [
@@ -18,7 +19,10 @@ export async function listPublicBillboards(f: ListingFilters = {}): Promise<Bill
   if (f.city) where.city = f.city;
   if (f.locality) where.locality = f.locality;
   if (f.tier && f.tier !== "all") where.tier = f.tier;
-  if (f.q) where[Op.or as unknown as string] = [{ name: { [Op.like]: `%${f.q}%` } }, { locality: { [Op.like]: `%${f.q}%` } }, { city: { [Op.like]: `%${f.q}%` } }];
+  if (f.q) {
+    const like = likeOp();
+    where[Op.or as unknown as string] = [{ name: { [like]: `%${f.q}%` } }, { locality: { [like]: `%${f.q}%` } }, { city: { [like]: `%${f.q}%` } }];
+  }
   const include = PUBLIC_INCLUDE.map((i) => (i.as === "category" && f.category && f.category !== "all" ? { ...i, where: { slug: f.category }, required: true } : i));
   return Billboard.findAll({
     where,
@@ -40,7 +44,7 @@ export async function localityCounts(): Promise<{ name: string; count: number }[
   const rows = (await Billboard.findAll({
     where: { status: "approved" },
     include: [{ model: Vendor, as: "vendor", attributes: [], where: { status: "approved" }, required: true }],
-    attributes: ["locality", [Billboard.sequelize!.fn("COUNT", Billboard.sequelize!.col("Billboard.id")), "count"]],
+    attributes: ["locality", [Billboard.sequelize!.fn("COUNT", Billboard.sequelize!.col(`${Billboard.name}.id`)), "count"]],
     group: ["locality"],
     order: [[Billboard.sequelize!.literal("count"), "DESC"]],
     raw: true,

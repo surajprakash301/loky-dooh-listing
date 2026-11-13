@@ -10,6 +10,9 @@ const LIMITS: Record<string, number> = {
   pdf: 10 * 1024 * 1024,
 };
 
+/** Storage keys: `<day>/<uuid>.<ext>` on local disk, `blob:<url>` on Vercel Blob, `static:<path>` for seeded assets. */
+const BLOB = "blob:";
+
 const uploadRoot = () => path.resolve(process.cwd(), env().UPLOAD_DIR);
 
 function kindOf(mime: string): keyof typeof LIMITS | null {
@@ -21,7 +24,24 @@ function kindOf(mime: string): keyof typeof LIMITS | null {
 
 export class UploadError extends Error {}
 
-/** Stores an uploaded browser File on local disk and records it in `files`. */
+async function writeToStorage(key: string, body: Buffer, contentType: string, isPublic: boolean): Promise<string> {
+  if (env().FILE_STORAGE === "blob") {
+    const { put } = await import("@vercel/blob");
+    const res = await put(key, body, {
+      access: isPublic ? "public" : "private",
+      contentType,
+      addRandomSuffix: false,
+      token: env().BLOB_READ_WRITE_TOKEN,
+    });
+    return BLOB + res.url;
+  }
+  const abs = path.join(uploadRoot(), key);
+  await mkdir(path.dirname(abs), { recursive: true });
+  await writeFile(abs, body);
+  return key;
+}
+
+/** Stores an uploaded browser File (local disk or Vercel Blob) and records it in `files`. */
 export async function storeUpload(file: File, uploadedBy: number, opts: { public: boolean }): Promise<FileRow> {
   const kind = kindOf(file.type);
   if (!kind) throw new UploadError(`Unsupported file type: ${file.type || "unknown"}`);
@@ -31,12 +51,10 @@ export async function storeUpload(file: File, uploadedBy: number, opts: { public
   const ext = path.extname(file.name).toLowerCase().slice(0, 8) || "";
   const day = new Date().toISOString().slice(0, 10);
   const key = `${day}/${randomUUID()}${ext}`;
-  const abs = path.join(uploadRoot(), key);
-  await mkdir(path.dirname(abs), { recursive: true });
-  await writeFile(abs, Buffer.from(await file.arrayBuffer()));
+  const storageKey = await writeToStorage(key, Buffer.from(await file.arrayBuffer()), file.type, opts.public);
 
   const row = await FileRow.create({
-    storageKey: key,
+    storageKey,
     publicUrl: null,
     originalName: file.name.slice(0, 255),
     mimeType: file.type,
@@ -50,7 +68,19 @@ export async function storeUpload(file: File, uploadedBy: number, opts: { public
   return row;
 }
 
+/** True when the row lives in Vercel Blob; returns its direct URL. */
+export function blobUrlOf(row: { storageKey: string }): string | null {
+  return row.storageKey.startsWith(BLOB) ? row.storageKey.slice(BLOB.length) : null;
+}
+
 export async function readStoredFile(row: FileRow): Promise<Buffer> {
+  const url = blobUrlOf(row);
+  if (url) {
+    const { get } = await import("@vercel/blob");
+    const res = await get(url, { access: row.publicUrl ? "public" : "private", token: env().BLOB_READ_WRITE_TOKEN });
+    if (!res || res.statusCode !== 200) throw new Error(`Blob not found: ${row.id}`);
+    return Buffer.from(await new Response(res.stream).arrayBuffer());
+  }
   return readFile(path.join(uploadRoot(), row.storageKey));
 }
 
