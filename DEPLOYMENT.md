@@ -14,7 +14,7 @@ Everything there is automated by `npm run deploy:vercel`.
 | Node.js ≥ 20 (22 recommended) | `node --env-file` is used by the DB scripts, so 20.6+ is required. |
 | npm ≥ 10 | Ships with Node 20/22. |
 | PostgreSQL (Neon, RDS, Supabase…) **or** MySQL 8.x | The dialect is chosen from the `DATABASE_URL` scheme (`postgresql://` or `mysql://`). Create an empty database and a user with full rights on it. |
-| Disk or Vercel Blob for uploads | Local disk (`UPLOAD_DIR`) on a VPS/container; Vercel Blob (`BLOB_READ_WRITE_TOKEN`) on Vercel or any other serverless host. Private documents (KYC) are stored as private blobs and proxied through `/api/files/[id]` after the auth check. |
+| Disk or Vercel Blob for uploads | Local disk (`UPLOAD_DIR`) on a VPS/container; Vercel Blob (`BLOB_READ_WRITE_TOKEN`) on Vercel or any other serverless host. Private documents (KYC) get unguessable blob names and are only handed out through `/api/files/[id]` after the auth check. |
 
 ## 2. Environment variables
 
@@ -29,6 +29,7 @@ They are validated at boot (`src/lib/server/env.ts`); the server refuses to star
 | `UPLOAD_DIR` | no | Where uploaded files are stored on disk. Default `./uploads`. Must be writable and persistent. Ignored when Blob is used. |
 | `BLOB_READ_WRITE_TOKEN` | on Vercel | Vercel Blob token. When set, uploads go to Blob instead of disk (Vercel injects it automatically once a Blob store is connected to the project). |
 | `FILE_STORAGE` | no | `disk` or `blob`. Defaults to `blob` when `BLOB_READ_WRITE_TOKEN` is present, otherwise `disk`. |
+| `BLOB_ACCESS` | no | `public` (default) or `private`; must match the access level the Blob store was created with. |
 | `NODE_ENV` | no | Set to `production` on servers (most hosts do this for you). |
 
 Rotating `ENCRYPTION_KEY` after data exists will make previously encrypted fields unreadable — back it up.

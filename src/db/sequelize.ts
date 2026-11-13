@@ -1,3 +1,5 @@
+import mysql2 from "mysql2";
+import pg from "pg";
 import { Op, Sequelize } from "sequelize";
 import { env } from "@/lib/server/env";
 
@@ -7,12 +9,16 @@ const g = globalThis as unknown as { __lokySequelize?: Sequelize };
 
 export function getSequelize(): Sequelize {
   if (!g.__lokySequelize) {
-    const { DATABASE_URL, DB_DIALECT } = env();
+    const { DB_DIALECT } = env();
+    // pg treats "require" as "verify-full" already (and warns about it); say so explicitly.
+    const DATABASE_URL = env().DATABASE_URL.replace(/([?&])sslmode=(require|prefer|verify-ca)\b/, "$1sslmode=verify-full");
     // Serverless hosts (Vercel) run many short-lived instances; keep each one's pool tiny so
     // Neon's connection limit is not exhausted. Long-running servers can afford a bigger pool.
     const serverless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
     g.__lokySequelize = new Sequelize(DATABASE_URL, {
       dialect: DB_DIALECT,
+      // Passed explicitly (instead of Sequelize's dynamic require) so serverless bundlers trace the driver.
+      dialectModule: DB_DIALECT === "postgres" ? pg : mysql2,
       logging: false,
       define: DB_DIALECT === "mysql" ? { underscored: true, charset: "utf8mb4", collate: "utf8mb4_unicode_ci" } : { underscored: true },
       pool: serverless ? { max: 3, min: 0, idle: 5_000, acquire: 30_000 } : { max: 10, min: 0, idle: 10_000 },

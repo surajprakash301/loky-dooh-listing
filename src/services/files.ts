@@ -24,13 +24,18 @@ function kindOf(mime: string): keyof typeof LIMITS | null {
 
 export class UploadError extends Error {}
 
+/** A Vercel Blob store is either public or private as a whole; `BLOB_ACCESS` must match the store. */
+const blobAccess = () => (process.env.BLOB_ACCESS === "private" ? "private" : "public");
+
 async function writeToStorage(key: string, body: Buffer, contentType: string, isPublic: boolean): Promise<string> {
   if (env().FILE_STORAGE === "blob") {
     const { put } = await import("@vercel/blob");
-    const res = await put(key, body, {
-      access: isPublic ? "public" : "private",
+    const res = await put(isPublic ? key : `private/${key}`, body, {
+      access: blobAccess(),
       contentType,
-      addRandomSuffix: false,
+      // Private documents (KYC, brand assets) get a random suffix so their URL cannot be guessed;
+      // the app only ever hands them out through the auth-checked /api/files/[id] route.
+      addRandomSuffix: !isPublic,
       token: env().BLOB_READ_WRITE_TOKEN,
     });
     return BLOB + res.url;
@@ -77,7 +82,7 @@ export async function readStoredFile(row: FileRow): Promise<Buffer> {
   const url = blobUrlOf(row);
   if (url) {
     const { get } = await import("@vercel/blob");
-    const res = await get(url, { access: row.publicUrl ? "public" : "private", token: env().BLOB_READ_WRITE_TOKEN });
+    const res = await get(url, { access: blobAccess(), token: env().BLOB_READ_WRITE_TOKEN });
     if (!res || res.statusCode !== 200) throw new Error(`Blob not found: ${row.id}`);
     return Buffer.from(await new Response(res.stream).arrayBuffer());
   }

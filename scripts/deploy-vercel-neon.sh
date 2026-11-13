@@ -62,7 +62,7 @@ fi
 
 echo "==> Vercel Blob store '$BLOB_STORE' (uploads)"
 if ! npx --yes vercel env ls production 2>/dev/null | grep -q BLOB_READ_WRITE_TOKEN; then
-  npx --yes vercel blob store add "$BLOB_STORE" --yes || true
+  npx --yes vercel blob create-store "$BLOB_STORE" --access public --region sin1 --yes || true
   npx --yes vercel env ls production 2>/dev/null | grep -q BLOB_READ_WRITE_TOKEN || {
     echo "!!  BLOB_READ_WRITE_TOKEN is not on the project yet."
     echo "    Open https://vercel.com/dashboard → Storage → $BLOB_STORE → Connect Project → $PROJECT, then re-run this script."
@@ -83,7 +83,9 @@ setenv ENCRYPTION_KEY "$ENCRYPTION_KEY"
 setenv FILE_STORAGE blob
 
 echo "==> Deploying to production"
-URL=$(npx --yes vercel deploy --prod --yes 2>/dev/null | tail -1)
+OUT=$(npx --yes vercel deploy --prod --yes 2>&1) || { echo "$OUT" | tail -20; exit 1; }
+# The CLI prints JSON when not attached to a TTY (CI), a bare URL otherwise.
+URL=$(printf '%s' "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const m=s.match(/"productionUrl":\s*"([^"]+)"/);process.stdout.write(m?m[1]:(s.trim().split("\n").pop()||""))})')
 echo
 echo "Deployed: $URL"
 echo "Secrets kept in $STATE (back them up — ENCRYPTION_KEY cannot be rotated without losing KYC data)."
