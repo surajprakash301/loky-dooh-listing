@@ -223,7 +223,7 @@ export function BillboardCardHorizontal({
   cta?: "coral" | "green";
 }) {
   return (
-    <article className={cn("flex rounded-2xl border border-line bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]", compact ? "gap-4" : "gap-5")}>
+    <article className={cn("card-lift flex rounded-2xl border border-line bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]", compact ? "gap-4" : "gap-5")}>
       <Link
         href={href}
         className={cn("relative block shrink-0 overflow-hidden rounded-xl", compact ? "h-[232px] w-[240px]" : "h-[232px] w-[290px]")}
@@ -285,7 +285,7 @@ export function BillboardCardVertical({
   compare?: boolean;
 }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-line bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+    <article className="card-lift flex flex-col rounded-2xl border border-line bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
       <Link href={href} className="relative block h-[224px] w-full overflow-hidden rounded-xl">
         <Image src={b.image} alt={b.name} fill sizes="(min-width:1024px) 33vw, 100vw" className="object-cover" />
         <TierBadge tier={b.tier} />

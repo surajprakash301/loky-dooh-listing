@@ -97,7 +97,7 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = L.map(el.current, { zoomControl: false, attributionControl: true, scrollWheelZoom: true });
-    L.control.zoom({ position: "bottomright" }).addTo(m);
+    L.control.zoom({ position: "topright" }).addTo(m);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

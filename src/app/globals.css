@@ -269,3 +269,39 @@
   .q-page { width: 297mm; height: 210mm; aspect-ratio: auto; page-break-after: always; break-after: page; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .q-page:last-child { page-break-after: auto; break-after: auto; }
 }
+
+/* ---------- advertiser-facing polish: smooth, consistent interaction ---------- */
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; -webkit-tap-highlight-color: transparent; }
+button, a, [role="button"], select, input, textarea {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+button:not(:disabled):active, [role="button"]:active, a.btn-3d:active { transform: translateY(1px) scale(0.985); }
+button:disabled { cursor: not-allowed; opacity: 0.6; }
+:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: 6px; }
+.btn-3d { transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), box-shadow 160ms, filter 160ms; }
+.btn-3d:hover { filter: brightness(1.04); }
+.btn-3d:active { transform: translateY(2px) scale(0.99); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) !important; }
+/* cards lift a touch on hover */
+article.card-lift { transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1), transform 200ms cubic-bezier(0.2, 0, 0, 1); }
+article.card-lift:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); transform: translateY(-2px); }
+/* floating campaign bar + sign-in popup entrances */
+@keyframes rise-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.96) translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.anim-rise { animation: rise-in 260ms cubic-bezier(0.2, 0, 0, 1) both; }
+.anim-pop { animation: pop-in 200ms cubic-bezier(0.2, 0, 0, 1) both; }
+.anim-fade { animation: fade-in 160ms ease-out both; }
+/* leave room for the bar so it never hides the last row of a page */
+body.has-campaign-bar { padding-bottom: 92px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+/* leaflet chrome in the house style */
+.leaflet-bar { border: 1px solid #e3e3e3 !important; border-radius: 10px !important; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important; }
+.leaflet-bar a { width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 18px !important; color: #0f0f0f !important; }
+.leaflet-bar a:hover { background: #f3f3f3 !important; }
+.leaflet-control-attribution { font-size: 10px !important; background: rgba(255, 255, 255, 0.8) !important; }

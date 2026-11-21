@@ -86,11 +86,11 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
               <tr>
                 <th className="px-4 py-3">#</th>
                 <th className="px-2 py-3">Media details &amp; address</th>
-                <th className="px-2 py-3">Geography</th>
-                <th className="px-2 py-3 text-right">List rate</th>
-                <th className="px-2 py-3 text-right">Final net</th>
-                <th className="px-2 py-3 text-right">{months} mo total</th>
-                <th className="px-3 py-3" />
+                <th className="px-2 py-3 whitespace-nowrap">Geography</th>
+                <th className="px-2 py-3 text-right whitespace-nowrap">List rate</th>
+                <th className="px-2 py-3 text-right whitespace-nowrap">Final net</th>
+                <th className="px-2 py-3 text-right whitespace-nowrap">{months} mo total</th>
+                <th className="w-10 px-3 py-3" />
               </tr>
             </thead>
             <tbody className={cn(pending && "opacity-60")}>
@@ -119,9 +119,9 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
               {priced === null && <tr><td colSpan={7} className="px-4 py-8 text-center text-ink-soft">Pricing your selection…</td></tr>}
             </tbody>
             <tfoot className="border-t-2 border-line bg-page text-[14px]">
-              <tr><td colSpan={5} className="px-4 py-2 text-right font-semibold">Subtotal · Outdoor campaign net total</td><td className="px-2 py-2 text-right font-bold">{inr(subtotal)}</td><td /></tr>
-              <tr><td colSpan={5} className="px-4 py-2 text-right">Total Gov. tax (inc. {GST_PCT}% GST)</td><td className="px-2 py-2 text-right">{inr(gst)}</td><td /></tr>
-              <tr className="text-[16px]"><td colSpan={5} className="px-4 py-3 text-right font-bold">Grand total</td><td className="px-2 py-3 text-right font-bold text-green" data-testid="grand-total">{inr(total)}</td><td /></tr>
+              <tr><td colSpan={5} className="px-4 py-2 text-right font-semibold">Subtotal · Outdoor campaign net total</td><td className="px-2 py-2 text-right font-bold whitespace-nowrap">{inr(subtotal)}</td><td /></tr>
+              <tr><td colSpan={5} className="px-4 py-2 text-right">Total Gov. tax (inc. {GST_PCT}% GST)</td><td className="px-2 py-2 text-right whitespace-nowrap">{inr(gst)}</td><td /></tr>
+              <tr className="text-[16px]"><td colSpan={5} className="px-4 py-3 text-right font-bold">Grand total</td><td className="px-2 py-3 text-right font-bold whitespace-nowrap text-green" data-testid="grand-total">{inr(total)}</td><td /></tr>
             </tfoot>
           </table>
           {missing.length > 0 && <p className="border-t border-line px-4 py-2 text-[12px] text-coral">{missing.length} selected billboard{missing.length > 1 ? "s have" : " has"} no rate for a {slot}s slot and {missing.length > 1 ? "are" : "is"} left out: {missing.join(", ")}.</p>}

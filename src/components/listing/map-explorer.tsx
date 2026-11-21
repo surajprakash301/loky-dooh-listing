@@ -117,18 +117,18 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
 
       <div className="relative flex min-h-0 flex-1">
         <aside className="hidden w-[300px] shrink-0 flex-col border-r border-line bg-white md:flex" data-testid="map-panel">
-          <div className="flex items-center justify-between border-b border-line px-4 py-3">
-            <div>
-              <p className="text-[15px] font-bold">
+          <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-[15px] font-bold leading-tight">
                 {inView.length} site{inView.length === 1 ? "" : "s"} <span className="font-normal text-ink-soft">in view</span>
               </p>
-              <p className="text-[11.5px] text-ink-soft">Sorted by daily reach · move the map to filter</p>
+              <p className="truncate text-[11.5px] text-ink-soft">By daily reach · move the map to filter</p>
             </div>
-            <button type="button" onClick={() => setFitKey((k) => k + 1)} className="text-[12.5px] font-semibold text-green hover:underline">
+            <button type="button" onClick={() => setFitKey((k) => k + 1)} className="shrink-0 rounded-full border border-line px-3 py-1 text-[12px] font-semibold text-green whitespace-nowrap hover:border-green hover:bg-green/5">
               Show all
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             {inView.length === 0 && <p className="p-6 text-center text-[13px] text-ink-soft">No billboards in this part of the map. Zoom out or press “Show all”.</p>}
             {inView.map((b) => (
               <div
@@ -140,7 +140,7 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
                   setFocus(b.code);
                 }}
                 onKeyDown={(e) => e.key === "Enter" && setActive(b.code)}
-                className={cn("flex gap-3 border-b border-line px-3 py-3 text-left transition-colors hover:bg-page", active === b.code && "bg-brand/10")}
+                className={cn("flex cursor-pointer gap-3 border-b border-line px-3 py-3 text-left transition-colors hover:bg-page", active === b.code && "bg-brand/10 shadow-[inset_3px_0_0_#16E17A]")}
                 data-testid={`site-${b.code}`}
               >
                 <div className="relative h-[72px] w-[84px] shrink-0 overflow-hidden rounded-lg">
@@ -174,18 +174,20 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
         <div className="relative min-w-0 flex-1">
           <LeafletMap sites={sites} selected={selected} active={active} onActive={setActive} onBounds={(b) => setBounds(b)} fitKey={fitKey} focus={focus} />
 
-          <button type="button" onClick={() => setFitKey((k) => k + 1)} className="absolute top-3 right-3 z-[500] inline-flex h-9 items-center gap-2 rounded-full border border-line bg-white px-4 text-[13px] font-medium shadow">
-            <Expand className="size-4" /> Show all sites
-          </button>
-          <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-3 rounded-full border border-line bg-white px-3 py-1.5 text-[11.5px] shadow">
+          <div className="absolute top-3 left-3 z-[500] flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => setFitKey((k) => k + 1)} className="inline-flex h-9 items-center gap-2 rounded-full border border-line bg-white px-4 text-[13px] font-medium shadow-[0_4px_14px_rgba(0,0,0,0.12)] hover:border-ink/40">
+              <Expand className="size-4" /> Show all sites
+            </button>
+            <div className="flex h-9 items-center gap-3 rounded-full border border-line bg-white px-3 text-[11.5px] shadow-[0_4px_14px_rgba(0,0,0,0.12)]">
             <span className="font-semibold">Map key</span>
             <span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-[#e5484d]" /> Site</span>
             <span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-brand" /> In campaign</span>
             <span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-ink" /> Several sites</span>
+            </div>
           </div>
 
           {activeSite && (
-            <div className="absolute right-3 bottom-14 z-[500] w-[300px] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_12px_40px_rgba(0,0,0,0.25)]" data-testid="site-popup">
+            <div className="anim-pop absolute right-3 bottom-4 z-[500] w-[300px] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_12px_40px_rgba(0,0,0,0.25)]" data-testid="site-popup">
               <div className="relative h-[150px]">
                 <Image src={activeSite.image} alt={activeSite.name} fill sizes="300px" className="object-cover" />
                 <span className="absolute bottom-2 left-2 rounded bg-ink/85 px-1.5 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">{activeSite.locality} corridor</span>

@@ -66,8 +66,8 @@ export function AdvertiserLogin({ pendingCode, light = false, triggerless = fals
         </button>
       )}
       {open && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-4 print:hidden" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label="Sign in" data-testid="login-dialog">
-          <div className="relative w-full max-w-[440px] rounded-2xl bg-white p-7 text-ink shadow-[0_24px_60px_rgba(0,0,0,0.35)]" onClick={(e) => e.stopPropagation()}>
+        <div className="anim-fade fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px] print:hidden" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label="Sign in" data-testid="login-dialog">
+          <div className="anim-pop relative w-full max-w-[440px] rounded-2xl bg-white p-7 text-ink shadow-[0_24px_60px_rgba(0,0,0,0.35)]" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => setOpen(false)} className="absolute top-4 right-4 grid size-8 place-items-center rounded-full text-ink-soft hover:bg-page" aria-label="Close">
               <X className="size-4" />
             </button>
