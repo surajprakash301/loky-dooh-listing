@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Heart, Info, MapPin, Store } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AddToCampaignButton } from "@/components/campaign/add-button";
 import { CategoryIcon } from "@/components/site/category-icon";
 import { type Billboard, TIER_LABEL, formatINR } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -260,9 +261,12 @@ export function BillboardCardHorizontal({
           <StatTiles b={b} compact={compact} />
         </div>
 
-        <div className="mt-auto flex items-end justify-between pt-3">
+        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
           <PriceBlock b={b} size={compact ? "sm" : "md"} />
-          <GetBestPriceButton tone={cta} className={cn(compact ? "h-10 px-4 text-[14px]" : "h-12")} />
+          <div className="flex items-center gap-2">
+            {b.code && <AddToCampaignButton code={b.code} size={compact ? "sm" : "md"} className={cn(!compact && "h-12")} />}
+            <GetBestPriceButton tone={cta} className={cn(compact ? "h-10 px-4 text-[14px]" : "h-12")} />
+          </div>
         </div>
       </div>
     </article>
@@ -316,9 +320,12 @@ export function BillboardCardVertical({
         <StatTiles b={b} compact />
       </div>
 
-      <div className="mt-4 flex items-end justify-between">
+      <div className="mt-4 flex items-end justify-between gap-2">
         <PriceBlock b={b} size="sm" />
-        <GetBestPriceButton className="h-10 px-4 text-[15px]" />
+        <div className="flex items-center gap-2">
+          {b.code && <AddToCampaignButton code={b.code} size="sm" labels={["Add", "Added"]} />}
+          <GetBestPriceButton className="h-10 px-4 text-[15px]" />
+        </div>
       </div>
     </article>
   );

@@ -6,6 +6,7 @@ import { DetailHero, type DetailData } from "@/components/detail/detail-hero";
 import { ExecutionDetails, LokyLabSection, WhatsappBanner } from "@/components/detail/detail-sections";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { SearchBar } from "@/components/site/search-bar";
+import { CampaignBar } from "@/components/campaign/campaign-bar";
 import { SiteHeader } from "@/components/site/site-header";
 import { TIER_LABEL } from "@/lib/domain";
 import { formatImpressions, formatINR } from "@/lib/format";
@@ -67,6 +68,7 @@ export default async function BillboardPage(props: PageProps<"/billboard/[id]">)
   return (
     <>
       <SiteHeader variant="detail" />
+      <CampaignBar />
 
       <div className="bg-page">
         <div className="mx-auto max-w-[1512px] space-y-3 px-8 pt-3 pb-3">

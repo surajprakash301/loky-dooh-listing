@@ -217,3 +217,16 @@ export const EMI_MONTHS = 3;
 export const BRAND_LOCK_DAYS = 21;
 export const TEAM_LIMIT = 5;
 export const ADDON_CREATIVE_CHARGE = 3000;
+
+/* ======================= Customer quotations (marketplace) ======================= */
+export const QUOTE_STATUSES = ["active", "accepted", "expired"] as const;
+export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
+export const QUOTE_STATUS_LABEL: Record<QuoteStatus, string> = { active: "Active", accepted: "Accepted", expired: "Expired" };
+/** Campaign lengths a customer can quote for; each maps onto a pricing package. */
+export const QUOTE_MONTHS = [1, 3, 6, 12] as const;
+export function packageForMonths(months: number): Package {
+  return months >= 12 ? "year" : months >= 6 ? "half_year" : months >= 3 ? "quarter" : "month";
+}
+export const GST_PCT = 18;
+/** Days a quotation stays valid before it is shown as expired. */
+export const QUOTE_VALID_DAYS = 30;

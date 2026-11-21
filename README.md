@@ -27,6 +27,13 @@ Seeded logins (all at `/login`):
 
 Agencies self-register at `/agency/register` (dev builds display the OTP on the verify page).
 
+Advertisers do not need a password: picking billboards on the listing or the **map** (`/listing?view=map`),
+pressing **Create quotation** and entering name, email and mobile creates their login. They sign in later at
+`/login/otp` with the mobile number and a one-time code (shown on screen until an SMS provider is wired), and
+find their quotations under **My quotations** (`/my/quotations`); **Orders** is a placeholder for the booking step.
+Every quotation renders as the house-style deck (cover, rate card, summary, one page per location) with a
+**Download PDF** button and a public share link (`/qt/<token>`).
+
 ## Checks
 
 ```bash
@@ -35,6 +42,7 @@ npm run lint
 npm run e2e          # browser-driven lifecycle test; needs the dev server running and Google Chrome installed
 npm run e2e:edge     # edge cases: auth limits, validation, file permissions, post-approval billboards, mobile overflow
 npm run e2e:agency   # agency lifecycle: register → OTP → assessment → brand → proposal → quotation → work order → payments → live
+npm run e2e:quote    # map view → add billboards → quotation builder → mobile OTP login → quotation PDF → My quotations
 npm run e2e:all      # all suites, in order (edge suites build on the lifecycle run)
 E2E_HEADLESS=0 npm run e2e:all   # watch it happen in a visible Chrome window
 ```

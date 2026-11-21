@@ -215,3 +215,28 @@ export const couponSchema = z.object({
   value: z.coerce.number().positive("Value is required"),
   description: z.preprocess((v) => (v === "" ? undefined : v), z.string().trim().max(191).optional()),
 });
+
+/* ---------- marketplace quotations + mobile OTP login ---------- */
+export const quoteSchema = z.object({
+  name: z.string().trim().min(2, "Name is required").max(120),
+  email: z.string().trim().email("Not a valid email").max(191),
+  phone: PHONE,
+  company: z.string().trim().max(120).optional(),
+  months: z.coerce.number().int().refine((n) => [1, 3, 6, 12].includes(n), "Pick 1, 3, 6 or 12 months"),
+  slotSeconds: z.coerce.number().int().refine((n) => (SLOTS as readonly number[]).includes(n), "Slot must be 10, 20 or 30 s"),
+  codes: z.preprocess(
+    (v) => {
+      if (Array.isArray(v)) return v;
+      if (typeof v !== "string") return [];
+      try {
+        const parsed = JSON.parse(v) as unknown;
+        return Array.isArray(parsed) ? parsed : v.split(",");
+      } catch {
+        return v.split(",");
+      }
+    },
+    z.array(z.string().trim().regex(/^[0-9A-Za-z-]{3,12}$/)).min(1, "Select at least one billboard").max(40, "At most 40 billboards per quotation"),
+  ),
+});
+export type QuoteInput = z.infer<typeof quoteSchema>;
+export const phoneLoginSchema = z.object({ phone: PHONE });

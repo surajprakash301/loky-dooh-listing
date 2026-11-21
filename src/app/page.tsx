@@ -6,6 +6,7 @@ import {
   TopBillboardsSection,
   TransformSection,
 } from "@/components/home/home-sections";
+import { CampaignBar } from "@/components/campaign/campaign-bar";
 import { SiteHeader } from "@/components/site/site-header";
 import { listPublicBillboards, toCard } from "@/services/catalog";
 
@@ -14,6 +15,7 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader variant="home" />
+      <CampaignBar />
       <main className="bg-page">
         <HomeHero />
         <TransformSection />

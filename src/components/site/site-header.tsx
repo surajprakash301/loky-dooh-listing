@@ -11,18 +11,21 @@ type Variant = "listing" | "detail" | "home";
 const NAV: Record<Variant, { label: string; href: string; caret?: boolean; active?: boolean; upper?: boolean }[]> = {
   listing: [
     { label: "LOKY LUME", href: "/listing" },
+    { label: "MAP", href: "/listing?view=map" },
     { label: "LOKY AI", href: "#" },
     { label: "Media Service's", href: "#", caret: true },
     { label: "Resources", href: "#", caret: true },
   ],
   detail: [
     { label: "All DOOH", href: "/listing", caret: true, active: true },
+    { label: "Map", href: "/listing?view=map" },
     { label: "Loky AI", href: "#" },
     { label: "Media Service's", href: "#", caret: true },
     { label: "Resources", href: "#", caret: true },
   ],
   home: [
     { label: "Loky LUME", href: "/listing" },
+    { label: "Map", href: "/listing?view=map" },
     { label: "Loky AI", href: "#" },
     { label: "Media Service's", href: "#", caret: true },
     { label: "Resources", href: "#", caret: true },
@@ -73,6 +76,11 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
           )}
           {session ? (
             <>
+              {session.role === "customer" && (
+                <Link href="/my/quotations" className={cn("hidden text-[14px] font-medium sm:inline", home ? "text-white" : "text-green")}>
+                  My quotations
+                </Link>
+              )}
               <Link href={homeFor(session.role)} className="flex items-center gap-2" title={session.role === "customer" ? "Your account" : "Open your portal"}>
                 <span className={cn("grid size-8 place-items-center rounded-full border text-[12px] font-bold", home ? "border-white/60 bg-white/20 text-white" : "border-green bg-green/15 text-green")}>{initials}</span>
                 <span className={cn("hidden text-[15px] font-medium sm:inline", home && "text-[14px]")}>{session.name.split(" ")[0]}</span>

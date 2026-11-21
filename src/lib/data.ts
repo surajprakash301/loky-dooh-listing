@@ -20,6 +20,18 @@ export type Billboard = {
   price: number;
   originalPrice: number;
   slotLabel: string;
+  /* ---- extra fields filled from the database (absent on the static demo rows) ---- */
+  code?: string;
+  lat?: number | null;
+  lng?: number | null;
+  address?: string;
+  sizeFt?: string;
+  screenType?: string;
+  /** 20 s slot: net and list rate per day / per month, when the vendor has priced them */
+  perDay?: number | null;
+  perMonth?: number | null;
+  perMonthList?: number | null;
+  reach?: number;
 };
 
 export { TIER_LABEL } from "@/lib/domain";

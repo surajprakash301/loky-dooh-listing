@@ -3,6 +3,7 @@ import { ListingView, type ViewMode } from "@/components/listing/listing-view";
 import { CategoryTabs } from "@/components/site/category-tabs";
 import { LocalityChips } from "@/components/site/locality-chips";
 import { SearchBar } from "@/components/site/search-bar";
+import { CampaignBar } from "@/components/campaign/campaign-bar";
 import { SiteHeader } from "@/components/site/site-header";
 import { listPublicBillboards, localityCounts, toCard } from "@/services/catalog";
 
@@ -23,6 +24,7 @@ export default async function ListingPage(props: PageProps<"/listing">) {
   return (
     <>
       <SiteHeader variant="listing" />
+      <CampaignBar />
 
       <div className="bg-page">
         <div className="mx-auto max-w-[1512px] space-y-3 px-8 pt-3 pb-3">

@@ -3,6 +3,7 @@
    Usage: npm run db:sync   |   npm run db:sync -- --alter   |   npm run db:sync -- --force */
 import { sequelize } from "../src/db/models";
 import "../src/db/agency-models";
+import "../src/db/quote-models";
 
 async function main() {
   const force = process.argv.includes("--force");

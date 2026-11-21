@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { BillboardCardHorizontal, BillboardCardVertical } from "@/components/listing/billboard-card";
 import { FiltersSidebar } from "@/components/listing/filters-sidebar";
-import { MapPanel } from "@/components/listing/map-panel";
+import { MapExplorer } from "@/components/listing/map-explorer";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { type Billboard, tierFilters } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -89,11 +89,28 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
   };
 
   const filtered = tier === "all" ? items : items.filter((b) => b.tier === tier);
-  const showSidebar = view !== "map";
+
+  if (view === "map") {
+    return (
+      <div>
+        <div className="mx-auto flex max-w-[1512px] items-center justify-between gap-4 px-8 py-3">
+          <div className="min-w-0">
+            <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Digital OOH", href: "/listing" }, { label: "Map" }]} />
+            <h1 className="mt-1 truncate text-[20px] font-medium">{heading}</h1>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <TierChips value={tier} onChange={setTier} />
+            <ViewToggle value={view} onChange={changeView} />
+          </div>
+        </div>
+        <MapExplorer items={filtered} />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex max-w-[1512px] gap-8 px-8 pt-5 pb-16">
-      {showSidebar && <FiltersSidebar className="hidden lg:block" />}
+      <FiltersSidebar className="hidden lg:block" />
 
       <div className="min-w-0 flex-1">
         <Breadcrumb
@@ -110,7 +127,7 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
           <ViewToggle value={view} onChange={changeView} />
         </div>
 
-        <div className={cn("mt-5", view === "map" && "flex gap-6")}>
+        <div className="mt-5">
           {filtered.length === 0 && (
             <div className="rounded-2xl border border-dashed border-line bg-white p-12 text-center text-muted-ink">
               No billboards match these filters yet.
@@ -130,7 +147,6 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
             </div>
           )}
 
-          {view === "map" && <MapPanel className="sticky top-6 hidden h-[600px] w-[340px] shrink-0 self-start xl:block" />}
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { Billboard, BillboardMedia, BillboardSlotPricing, Category, File as FileRow, Vendor } from "@/db";
 import { formatImpressions } from "@/lib/format";
 import type { Billboard as CardBillboard } from "@/lib/data";
+import type { Package } from "@/lib/domain";
 import { likeOp } from "@/db/sequelize";
 import { fileUrl } from "./files";
 
@@ -100,7 +101,31 @@ export function toCard(b: Billboard): CardBillboard {
     price: price?.price ?? 0,
     originalPrice: price?.original ?? 0,
     slotLabel: price?.label ?? "per slot",
+    code: b.code,
+    lat: b.lat == null ? null : Number(b.lat),
+    lng: b.lng == null ? null : Number(b.lng),
+    address: [b.addressLine, b.locality, b.city, b.state, b.pincode].filter(Boolean).join(", "),
+    sizeFt: `${Number(b.widthFt)}×${Number(b.heightFt)} ft`,
+    screenType: b.screenType.toUpperCase(),
+    perDay: rate(b, 20, "day")?.offer ?? null,
+    perMonth: rate(b, 20, "month")?.offer ?? null,
+    perMonthList: rate(b, 20, "month")?.list ?? null,
+    reach: b.dailyImpressions,
   };
+}
+
+/** One active pricing row as plain numbers. */
+export function rate(b: Billboard, slotSeconds: number, pkg: Package): { list: number; offer: number } | null {
+  const row = (b.pricing ?? []).find((p) => p.isActive && p.slotSeconds === slotSeconds && p.package === pkg);
+  return row ? { list: Number(row.listPrice), offer: Number(row.offerPrice) } : null;
+}
+
+/** Approved billboards by code, in the order given, for the quotation builder. */
+export async function listByCodes(codes: string[]): Promise<Billboard[]> {
+  if (!codes.length) return [];
+  const rows = await Billboard.findAll({ where: { code: codes, status: "approved" }, include: PUBLIC_INCLUDE, order: [[{ model: BillboardMedia, as: "media" }, "sortOrder", "ASC"]] });
+  const byCode = new Map(rows.map((r) => [r.code, r]));
+  return codes.map((c) => byCode.get(c)).filter((r): r is Billboard => !!r);
 }
 
 /** Compact row for the agency screen picker. */
