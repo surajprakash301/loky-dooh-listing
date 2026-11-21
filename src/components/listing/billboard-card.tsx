@@ -127,9 +127,9 @@ function StatTiles({ b, compact = false }: { b: Billboard; compact?: boolean }) 
     : "border-sky-tier/60 border-b-sky-tier bg-sky-tint";
   const { stats } = b;
   const tiles = [
-    { label: ["Daily", "Impression"], value: <><b>{stats.dailyImpression}</b><span className="text-[11px]">/per day.</span></> },
+    { label: ["Daily", "Impression"], value: <><b>{stats.dailyImpression}</b>{compact ? <span className="text-[10px]">/day</span> : <span className="text-[11px]">/per day.</span>}</> },
     { label: ["Loop", "Time"], value: <><b>{stats.loopTime.m}</b><span className="text-[11px]">m</span> : <b>{stats.loopTime.s}</b><span className="text-[11px]">s</span></> },
-    { label: ["Display", "Tech"], value: <><b>{stats.displayTech.value}</b> <span className="text-[11px]">{stats.displayTech.unit}</span></> },
+    { label: ["Display", "Tech"], value: <><b>{stats.displayTech.value}</b>{stats.displayTech.value !== stats.displayTech.unit && stats.displayTech.value !== "LCD" && <span className="text-[11px]"> {stats.displayTech.unit}</span>}</> },
     { label: ["Ad's", "slots,"], value: <span className="font-bold text-green">{stats.adSlots.used}<span className="text-ink">/</span>{stats.adSlots.total}</span> },
   ];
   return (
@@ -138,7 +138,7 @@ function StatTiles({ b, compact = false }: { b: Billboard; compact?: boolean }) 
         <div
           key={t.label[0]}
           className={cn(
-            "flex rounded-md border border-b-2 px-2 py-1.5",
+            "flex min-w-0 overflow-hidden rounded-md border border-b-2 px-2 py-1.5",
             tone,
             compact ? "flex-col gap-0.5" : "items-center justify-between gap-2 px-3",
           )}
@@ -160,10 +160,10 @@ function StatTiles({ b, compact = false }: { b: Billboard; compact?: boolean }) 
 function PriceBlock({ b, size = "md" }: { b: Billboard; size?: "sm" | "md" }) {
   return (
     <div>
-      <p className={cn("font-medium uppercase text-green", size === "md" ? "text-[14px]" : "text-[12px]")}>
+      <p className={cn("font-medium whitespace-nowrap uppercase text-green", size === "md" ? "text-[14px]" : "text-[12px]")}>
         Premium Placement Rate
       </p>
-      <p className={cn("flex items-baseline gap-2 leading-none", size === "md" ? "mt-1" : "mt-0.5")}>
+      <p className={cn("flex items-baseline gap-2 leading-none whitespace-nowrap", size === "md" ? "mt-1" : "mt-0.5")}>
         {b.originalPrice > b.price && <s className={cn("text-muted-ink", size === "md" ? "text-[17px]" : "text-[13px]")}>{formatINR(b.originalPrice)}</s>}
         <span className={cn("font-bold", size === "md" ? "text-[24px]" : "text-[18px]")}>{formatINR(b.price)}/</span>
         <span className={cn("text-green", size === "md" ? "text-[13px]" : "text-[11px]")}>{b.slotLabel}</span>
@@ -184,7 +184,7 @@ export function GetBestPriceButton({
     <button
       type="button"
       className={cn(
-        "btn-3d rounded-lg px-5 text-[16px] font-medium text-white",
+        "btn-3d shrink-0 rounded-lg px-5 text-[16px] font-medium whitespace-nowrap text-white",
         tone === "coral" ? "bg-coral" : "bg-[#3db55a]",
         className,
       )}
@@ -261,9 +261,9 @@ export function BillboardCardHorizontal({
           <StatTiles b={b} compact={compact} />
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2.5 pt-3">
           <PriceBlock b={b} size={compact ? "sm" : "md"} />
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             {b.code && <AddToCampaignButton code={b.code} size={compact ? "sm" : "md"} className={cn(!compact && "h-12")} />}
             <GetBestPriceButton tone={cta} className={cn(compact ? "h-10 px-4 text-[14px]" : "h-12")} />
           </div>
@@ -285,7 +285,7 @@ export function BillboardCardVertical({
   compare?: boolean;
 }) {
   return (
-    <article className="card-lift flex flex-col rounded-2xl border border-line bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+    <article className="card-lift flex h-full flex-col rounded-2xl border border-line bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
       <Link href={href} className="relative block h-[224px] w-full overflow-hidden rounded-xl">
         <Image src={b.image} alt={b.name} fill sizes="(min-width:1024px) 33vw, 100vw" className="object-cover" />
         <TierBadge tier={b.tier} />
@@ -320,11 +320,11 @@ export function BillboardCardVertical({
         <StatTiles b={b} compact />
       </div>
 
-      <div className="mt-4 flex items-end justify-between gap-2">
+      <div className="mt-auto flex flex-wrap items-end justify-between gap-x-2 gap-y-2.5 pt-4">
         <PriceBlock b={b} size="sm" />
-        <div className="flex items-center gap-2">
-          {b.code && <AddToCampaignButton code={b.code} size="sm" labels={["Add", "Added"]} />}
-          <GetBestPriceButton className="h-10 px-4 text-[15px]" />
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {b.code && <AddToCampaignButton code={b.code} size="sm" className="h-10" labels={["Add", "Added"]} />}
+          <GetBestPriceButton className="h-10 px-4 text-[14px]" />
         </div>
       </div>
     </article>

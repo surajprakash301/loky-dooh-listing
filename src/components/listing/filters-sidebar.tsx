@@ -142,11 +142,11 @@ export function FiltersSidebar({ className }: { className?: string }) {
       </Section>
 
       <Section title="Budget" suffix={<span className="text-[10px] font-bold">(PER SCREEN)</span>}>
-        <div className="px-1 pt-4">
+        <div className="px-2 pt-4">
           <div className="relative">
             <span
-              className="absolute -top-4 -translate-x-1/2 text-[9px] text-ink-soft"
-              style={{ left: `${((budget[1] - 10) / 85) * 100}%` }}
+              className="absolute -top-4 text-[9px] whitespace-nowrap text-ink-soft"
+              style={{ left: `${((budget[1] - 10) / 85) * 100}%`, transform: `translateX(-${((budget[1] - 10) / 85) * 100}%)` }}
             >
               ₹{budget[1]}k
             </span>

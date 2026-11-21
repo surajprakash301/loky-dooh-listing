@@ -116,7 +116,7 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
       </div>
 
       <div className="relative flex min-h-0 flex-1">
-        <aside className="hidden w-[300px] shrink-0 flex-col border-r border-line bg-white md:flex" data-testid="map-panel">
+        <aside className="hidden w-[340px] shrink-0 flex-col border-r border-line bg-white md:flex" data-testid="map-panel">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <div className="min-w-0">
               <p className="text-[15px] font-bold leading-tight">
@@ -143,7 +143,7 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
                 className={cn("flex cursor-pointer gap-3 border-b border-line px-3 py-3 text-left transition-colors hover:bg-page", active === b.code && "bg-brand/10 shadow-[inset_3px_0_0_#16E17A]")}
                 data-testid={`site-${b.code}`}
               >
-                <div className="relative h-[72px] w-[84px] shrink-0 overflow-hidden rounded-lg">
+                <div className="relative h-[76px] w-[88px] shrink-0 overflow-hidden rounded-lg">
                   <Image src={b.image} alt="" fill sizes="84px" className="object-cover" />
                   <span className="absolute bottom-1 left-1 rounded bg-ink/85 px-1 text-[8.5px] font-bold tracking-wide text-white">{TIER_SHORT[b.tier]}</span>
                 </div>
@@ -158,8 +158,8 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <Price b={b} size="sm" />
-                    <div className="flex items-center gap-1.5">
-                      <AddToCampaignButton code={b.code} size="sm" labels={["+ Add", "Added"]} />
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <AddToCampaignButton code={b.code} size="sm" labels={["Add", "Added"]} />
                       <Link href={`/billboard/${b.code}`} className="grid size-8 place-items-center rounded-lg border border-line text-ink-soft hover:text-ink" title="View details" onClick={(e) => e.stopPropagation()}>
                         <ExternalLink className="size-3.5" />
                       </Link>
