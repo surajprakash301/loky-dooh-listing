@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ExternalLink, Expand, MapPin, X } from "lucide-react";
+import { ChevronDown, ExternalLink, Expand, FileText, MapPin, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddToCampaignButton } from "@/components/campaign/add-button";
 import type { Bounds, MapSite } from "@/components/listing/leaflet-map";
@@ -108,6 +108,11 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
         <span className="ml-auto inline-flex h-9 items-center gap-2 rounded-full border border-line bg-page px-4 text-[13px] font-semibold" data-testid="campaign-count">
           Campaign <span className="grid size-5 place-items-center rounded-full bg-ink text-[11px] text-white">{selected.length}</span>
         </span>
+        {selected.length > 0 && (
+          <Link href="/quote/new" className="btn-3d inline-flex h-9 items-center gap-2 rounded-full bg-brand px-4 text-[13px] font-bold text-ink" data-testid="map-create-quotation">
+            <FileText className="size-4" /> Create quotation ({selected.length})
+          </Link>
+        )}
       </div>
 
       <div className="relative flex min-h-0 flex-1">
