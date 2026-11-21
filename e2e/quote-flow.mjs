@@ -83,19 +83,23 @@ await page.click('button[type="submit"]:has-text("Generate quotation")');
 await page.waitForSelector("text=Enter a 10-digit mobile number");
 ok("invalid mobile number is rejected and the name is kept", (await page.inputValue('input[name="name"]')) === "Abhinav Verma");
 await page.fill('input[name="phone"]', phone);
-await Promise.all([page.waitForURL("**/login/otp**"), page.click('button[type="submit"]:has-text("Generate quotation")')]);
+await Promise.all([page.waitForURL("**/orders/quotations/**"), page.click('button[type="submit"]:has-text("Generate quotation")')]);
 
-/* ---------- 4. OTP login for the new advertiser ---------- */
-ok("new advertiser is sent to the OTP step", page.url().includes("sent=1"));
-const code = (await page.locator("b.font-mono").first().textContent()).trim();
-ok("demo code is shown (6 digits)", /^\d{6}$/.test(code), code);
-await page.fill('input[name="code"]', "000000");
-await page.click('button[type="submit"]:has-text("Verify")');
+/* ---------- 4. OTP sign-in popup on the marketplace (no separate page) ---------- */
+ok("new advertiser lands on the Orders section with the sign-in popup", page.url().includes("login=1"), page.url());
+await page.waitForSelector('[data-testid="login-dialog"]');
+ok("sign-in prompt shown under the normal header", (await page.locator('[data-testid="orders-signin-prompt"]').count()) === 1 && (await page.locator("header").count()) === 1);
+const code = (await page.locator('[data-testid="dev-code"]').textContent()).trim();
+ok("popup opens on the code step with the demo code (6 digits)", /^\d{6}$/.test(code), code);
+await page.fill('[data-testid="login-dialog"] input[name="code"]', "000000");
+await page.click('[data-testid="login-dialog"] button:has-text("Verify")');
 await page.waitForSelector("text=That code is not right");
 ok("wrong code is rejected", true);
-await page.fill('input[name="code"]', code);
-await Promise.all([page.waitForURL("**/my/quotations/**"), page.click('button[type="submit"]:has-text("Verify")')]);
-ok("correct code opens the new quotation", /\/my\/quotations\/\d+/.test(page.url()), page.url());
+await page.fill('[data-testid="login-dialog"] input[name="code"]', code);
+await page.click('[data-testid="login-dialog"] button:has-text("Verify")');
+await page.waitForSelector('[data-testid="quotation-doc"]');
+ok("correct code signs in and reveals the quotation in place", /\/orders\/quotations\/\d+/.test(page.url()) && (await page.locator('[data-testid="login-dialog"]').count()) === 0, page.url());
+ok("header now shows Orders", (await page.locator('[data-testid="orders-link"]').count()) === 1);
 ok("created notice shown", await page.locator('[data-testid="created-notice"]').isVisible());
 const pages = await page.locator(".q-page").count();
 ok(`quotation document has cover, rates, summary, divider, 3 locations and thank-you (${pages})`, pages === 8, String(pages));
@@ -110,10 +114,12 @@ await page.emulateMedia({ media: "screen" });
 ok("PDF rendered to e2e/shots/quotation.pdf", true);
 
 /* ---------- 5. my account ---------- */
-await page.goto(`${BASE}/my/quotations`);
-ok("active quotations lists the new one", (await page.locator('[data-testid^="quote-"]').count()) >= 1);
-await page.goto(`${BASE}/my/orders`);
-ok("orders tab shows the empty state", (await page.textContent("body")).includes("No orders yet"));
+await page.click('[data-testid="orders-link"]');
+await page.waitForURL("**/orders");
+ok("Orders → active quotations lists the new one", (await page.locator('[data-testid^="quote-"]').count()) >= 1);
+await page.click('[data-testid="orders-tabs"] a:has-text("Orders")');
+await page.waitForURL("**/orders/placed");
+ok("orders tab shows the empty state", (await page.locator('[data-testid="orders-empty"]').count()) === 1);
 await page.goto(`${BASE}/admin`);
 ok("advertiser cannot open admin", !page.url().includes("/admin"), page.url());
 
@@ -124,25 +130,28 @@ await page.locator('[data-testid="site-00016"] [data-testid="add-00016"]').click
 await page.goto(`${BASE}/quote/new`);
 await page.waitForSelector('[data-testid="line-00016"]');
 ok("signed-in builder prefills the mobile number", (await page.inputValue('input[name="phone"]')) === phone);
-await Promise.all([page.waitForURL("**/my/quotations/**"), page.click('button[type="submit"]:has-text("Generate quotation")')]);
-ok("signed-in advertiser gets the quotation directly", page.url().includes("created=1"));
-await page.goto(`${BASE}/my/quotations`);
+await Promise.all([page.waitForURL("**/orders/quotations/**"), page.click('button[type="submit"]:has-text("Generate quotation")')]);
+ok("signed-in advertiser gets the quotation directly", page.url().includes("created=1") && !page.url().includes("login=1"));
+await page.goto(`${BASE}/orders`);
 ok("two active quotations now", (await page.locator('[data-testid^="quote-"]').count()) >= 2);
 
-/* ---------- 7. sign out, come back with mobile + OTP ---------- */
+/* ---------- 7. sign out, come back through the header popup with mobile + OTP ---------- */
 await page.click('button:has-text("Sign out")');
 await page.waitForURL("**/login**");
-await page.goto(`${BASE}/login/otp`);
-await page.fill('input[name="phone"]', "9000000000");
-await page.click('button[type="submit"]');
+await page.goto(`${BASE}/`);
+await page.click('[data-testid="open-login"]');
+await page.waitForSelector('[data-testid="login-dialog"]');
+await page.fill('[data-testid="login-dialog"] input[name="phone"]', "9000000000");
+await page.click('[data-testid="login-dialog"] button[type="submit"]');
 await page.waitForSelector("text=No advertiser account");
 ok("unknown number is refused", true);
-await page.fill('input[name="phone"]', phone);
-await Promise.all([page.waitForURL("**/login/otp?sent=1**"), page.click('button[type="submit"]')]);
-const code2 = (await page.locator("b.font-mono").first().textContent()).trim();
-await page.fill('input[name="code"]', code2);
-await Promise.all([page.waitForURL("**/my/quotations**"), page.click('button[type="submit"]:has-text("Verify")')]);
-ok("returning advertiser lands on My quotations", page.url().endsWith("/my/quotations"));
+await page.fill('[data-testid="login-dialog"] input[name="phone"]', phone);
+await page.click('[data-testid="login-dialog"] button[type="submit"]');
+await page.waitForSelector('[data-testid="dev-code"]');
+const code2 = (await page.locator('[data-testid="dev-code"]').textContent()).trim();
+await page.fill('[data-testid="login-dialog"] input[name="code"]', code2);
+await Promise.all([page.waitForURL("**/orders"), page.click('[data-testid="login-dialog"] button:has-text("Verify")')]);
+ok("returning advertiser signs in from the home page and lands on Orders", page.url().endsWith("/orders"));
 
 await browser.close();
 console.log(`\n${pass}/${pass + fail} checks passed`);

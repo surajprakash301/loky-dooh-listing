@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { Bell, ChevronDown, Grip } from "lucide-react";
+import { AdvertiserLogin } from "@/components/auth/advertiser-login";
 import { logoutAction } from "@/actions/auth";
 import { Logo } from "@/components/site/logo";
 import { getSession } from "@/lib/server/auth";
@@ -35,6 +38,7 @@ const NAV: Record<Variant, { label: string; href: string; caret?: boolean; activ
 export async function SiteHeader({ variant = "listing", className }: { variant?: Variant; className?: string }) {
   const home = variant === "home";
   const session = await getSession();
+  const pendingCode = session ? null : ((await cookies()).get("loky_otp_uid")?.value ? ((await cookies()).get("loky_dev_otp")?.value ?? "") : null);
   const initials = session ? session.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() : "SP";
   return (
     <header
@@ -77,11 +81,11 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
           {session ? (
             <>
               {session.role === "customer" && (
-                <Link href="/my/quotations" className={cn("hidden text-[14px] font-medium sm:inline", home ? "text-white" : "text-green")}>
-                  My quotations
+                <Link href="/orders" className={cn("inline-flex h-9 items-center rounded-full border px-4 text-[14px] font-semibold", home ? "border-white/60 text-white" : "border-ink/40 text-ink hover:border-green hover:text-green")} data-testid="orders-link">
+                  Orders
                 </Link>
               )}
-              <Link href={homeFor(session.role)} className="flex items-center gap-2" title={session.role === "customer" ? "Your account" : "Open your portal"}>
+              <Link href={session.role === "customer" ? "/orders" : homeFor(session.role)} className="flex items-center gap-2" title={session.role === "customer" ? "Your orders" : "Open your portal"}>
                 <span className={cn("grid size-8 place-items-center rounded-full border text-[12px] font-bold", home ? "border-white/60 bg-white/20 text-white" : "border-green bg-green/15 text-green")}>{initials}</span>
                 <span className={cn("hidden text-[15px] font-medium sm:inline", home && "text-[14px]")}>{session.name.split(" ")[0]}</span>
               </Link>
@@ -96,9 +100,9 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
               ) : (
                 <span className="grid size-8 place-items-center rounded-full border border-coral bg-coral/15 text-[12px] font-bold text-coral">SP</span>
               )}
-              <Link href="/login" className={cn("text-[17px] font-medium", home && "text-[15px]")}>
-                login/ signup
-              </Link>
+              <Suspense fallback={<span className={cn("text-[17px] font-medium", home && "text-[15px]")}>login/ signup</span>}>
+                <AdvertiserLogin pendingCode={pendingCode} light={home} />
+              </Suspense>
             </>
           )}
         </div>

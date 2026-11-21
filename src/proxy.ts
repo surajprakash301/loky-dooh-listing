@@ -7,7 +7,6 @@ const AREAS: { prefix: string; roles: string[] }[] = [
   { prefix: "/rep", roles: ["representative"] },
   { prefix: "/vendor", roles: ["vendor"] },
   { prefix: "/agency", roles: ["agency", "agency_member"] },
-  { prefix: "/my", roles: ["customer"] },
 ];
 // Agency self-registration happens before a session exists.
 const PUBLIC = ["/agency/register", "/agency/verify"];
@@ -33,5 +32,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/rep/:path*", "/vendor/:path*", "/agency/:path*", "/my/:path*"],
+  matcher: ["/admin/:path*", "/rep/:path*", "/vendor/:path*", "/agency/:path*"],
 };

@@ -28,9 +28,10 @@ Seeded logins (all at `/login`):
 Agencies self-register at `/agency/register` (dev builds display the OTP on the verify page).
 
 Advertisers do not need a password: picking billboards on the listing or the **map** (`/listing?view=map`),
-pressing **Create quotation** and entering name, email and mobile creates their login. They sign in later at
-`/login/otp` with the mobile number and a one-time code (shown on screen until an SMS provider is wired), and
-find their quotations under **My quotations** (`/my/quotations`); **Orders** is a placeholder for the booking step.
+pressing **Create quotation** and entering name, email and mobile creates their login. They sign in from the
+marketplace header's **login/ signup** popup with the mobile number and a one-time code (shown on screen until an
+SMS provider is wired). Signed-in advertisers get an **Orders** item in the header (`/orders`) with two tabs:
+**Active quotations** and **Orders** (placeholder for the booking step). Nothing leaves the marketplace layout.
 Every quotation renders as the house-style deck (cover, rate card, summary, one page per location) with a
 **Download PDF** button and a public share link (`/qt/<token>`).
 

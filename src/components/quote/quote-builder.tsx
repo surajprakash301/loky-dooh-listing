@@ -130,7 +130,7 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
 
       <aside className="h-fit rounded-2xl border border-line bg-white p-6 lg:sticky lg:top-6">
         <h2 className="text-[18px] font-bold">Who is this quotation for?</h2>
-        <p className="mt-1 text-[13px] text-ink-soft">{signedIn ? "It will be saved to your account." : "We set up your advertiser login with this mobile number so you can come back to it any time."}</p>
+        <p className="mt-1 text-[13px] text-ink-soft">{signedIn ? "It will be saved to your account." : "Your advertiser login is this mobile number; you will confirm it with a one-time code and can come back to the quotation any time."}</p>
         <div className="mt-5 flex flex-col gap-4">
           {state.error && <Notice tone="error">{state.error}</Notice>}
           <Field label="Full name" name="name" error={state.errors?.name} required><TextInput name="name" autoComplete="name" defaultValue={state.values?.name ?? prefill.name ?? ""} error={state.errors?.name} /></Field>
@@ -138,7 +138,7 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
           <Field label="Email" name="email" error={state.errors?.email} required><TextInput name="email" type="email" autoComplete="email" defaultValue={state.values?.email ?? prefill.email ?? ""} error={state.errors?.email} /></Field>
           <Field label="Mobile number" name="phone" error={state.errors?.phone} required><TextInput name="phone" inputMode="numeric" autoComplete="tel" maxLength={10} placeholder="10-digit mobile" defaultValue={state.values?.phone ?? prefill.phone ?? ""} error={state.errors?.phone} /></Field>
           <SubmitButton className="mt-1 w-full" pendingText="Preparing your quotation…">Generate quotation</SubmitButton>
-          <p className="text-center text-[12px] text-ink-soft">{signedIn ? "Opens the finished quotation." : "You will confirm the mobile number with a one-time code."}</p>
+          <p className="text-center text-[12px] text-ink-soft">{signedIn ? "Opens the finished quotation under Orders." : "The quotation opens under Orders once the code is confirmed."}</p>
         </div>
       </aside>
     </form>

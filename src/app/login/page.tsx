@@ -18,7 +18,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
       subtitle="Admins, representatives, vendors and advertisers all sign in here."
       footer={
         <>
-          Advertiser? <Link href={next ? `/login/otp?next=${encodeURIComponent(next)}` : "/login/otp"} className="font-semibold text-v-green hover:underline">Sign in with mobile OTP</Link>
+          Advertiser? <Link href="/?login=1" className="font-semibold text-v-green hover:underline">Sign in with your mobile on the marketplace</Link>
           <span className="mx-2 text-v-line">|</span>
           Agency? <Link href="/agency/register" className="font-semibold text-v-green hover:underline">Register as a Loky partner</Link>
           <span className="mx-2 text-v-line">|</span>
