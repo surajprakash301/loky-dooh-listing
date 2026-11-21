@@ -121,6 +121,28 @@ export function bestRate(b: Billboard, pkg: Package): { list: number; offer: num
   return r ? { list: Number(r.listPrice), offer: Number(r.offerPrice), slotSeconds: r.slotSeconds } : null;
 }
 
+/**
+ * Rate for a slot length and package with graceful fallbacks, because vendors price only some slot
+ * lengths: exact row → the monthly row for that slot → the nearest priced slot scaled by seconds →
+ * the daily rate × 30. `estimated` is true whenever the exact row was missing.
+ */
+export function rateFor(b: Billboard, slotSeconds: number, pkg: Package): { list: number; offer: number; estimated: boolean } | null {
+  const exact = rate(b, slotSeconds, pkg);
+  if (exact) return { ...exact, estimated: false };
+  const monthly = pkg !== "day" ? rate(b, slotSeconds, "month") : null;
+  if (monthly) return { ...monthly, estimated: true };
+  const rows = (b.pricing ?? []).filter((p) => p.isActive && (pkg === "day" ? p.package === "day" : p.package !== "day"));
+  const nearest = rows.sort((x, y) => Math.abs(x.slotSeconds - slotSeconds) - Math.abs(y.slotSeconds - slotSeconds) || (x.package === pkg ? -1 : 1))[0];
+  if (nearest) {
+    const f = slotSeconds / nearest.slotSeconds;
+    const round = (n: number) => Math.round(n / 100) * 100;
+    return { list: round(Number(nearest.listPrice) * f), offer: round(Number(nearest.offerPrice) * f), estimated: true };
+  }
+  const day = rate(b, slotSeconds, "day") ?? bestRate(b, "day");
+  if (day && pkg !== "day") return { list: day.list * 30, offer: day.offer * 30, estimated: true };
+  return null;
+}
+
 /** One active pricing row as plain numbers. */
 export function rate(b: Billboard, slotSeconds: number, pkg: Package): { list: number; offer: number } | null {
   const row = (b.pricing ?? []).find((p) => p.isActive && p.slotSeconds === slotSeconds && p.package === pkg);

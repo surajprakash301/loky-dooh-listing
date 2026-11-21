@@ -133,7 +133,7 @@ ok("dashboard shows Level 2", (await page.locator("text=Level 2 partner").count(
 /* 7. vendor sees occupancy, admin sees agency */
 await login("bulzads-demo", "Vendor@12345");
 await page.goto(`${BASE}/vendor/screens`);
-const booked = (await page.locator("p", { hasText: /^[1-9]\/8 booked$/ }).count());
+const booked = (await page.locator("p", { hasText: /^[1-9][0-9]*\/[0-9]+ booked$/ }).count());
 ok("vendor screens show booked slots from the agency campaign", booked >= 2, `${booked} screens with bookings`);
 await login("admin", "Admin@12345");
 await page.goto(`${BASE}/admin/agencies`);

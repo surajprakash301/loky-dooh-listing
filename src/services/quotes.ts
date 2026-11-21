@@ -3,7 +3,7 @@ import { Billboard, CustomerQuotation, CustomerQuotationItem, OtpCode, User, seq
 import { GST_PCT, QUOTE_VALID_DAYS, packageForMonths, type Package, type QuoteStatus } from "@/lib/domain";
 import { hashPassword, temporaryPassword } from "@/lib/server/password";
 import type { SessionPayload } from "@/lib/session";
-import { listByCodes, mediaUrls, rate } from "./catalog";
+import { listByCodes, mediaUrls, rateFor } from "./catalog";
 
 export class QuoteError extends Error {}
 
@@ -26,20 +26,10 @@ export type QuoteLine = {
   estimated: boolean;
 };
 
-/** Monthly list/net rate for one slot length and campaign length, with sensible fallbacks. */
+/** Monthly list/net rate for one slot length and campaign length, with the catalogue's fallbacks. */
 function monthlyRate(b: Billboard, slotSeconds: number, months: number): { list: number; net: number; estimated: boolean } | null {
-  const pkg: Package = packageForMonths(months);
-  const exact = rate(b, slotSeconds, pkg) ?? rate(b, slotSeconds, "month");
-  if (exact) return { list: exact.list, net: exact.offer, estimated: !rate(b, slotSeconds, pkg) };
-  // scale from another slot length (price grows roughly with seconds)
-  const any = (b.pricing ?? []).filter((p) => p.isActive && p.package !== "day").sort((x, y) => Math.abs(x.slotSeconds - slotSeconds) - Math.abs(y.slotSeconds - slotSeconds))[0];
-  if (any) {
-    const f = slotSeconds / any.slotSeconds;
-    return { list: Math.round((Number(any.listPrice) * f) / 100) * 100, net: Math.round((Number(any.offerPrice) * f) / 100) * 100, estimated: true };
-  }
-  const day = rate(b, slotSeconds, "day") ?? rate(b, 20, "day");
-  if (day) return { list: day.list * 30, net: day.offer * 30, estimated: true };
-  return null;
+  const r = rateFor(b, slotSeconds, packageForMonths(months));
+  return r ? { list: r.list, net: r.offer, estimated: r.estimated } : null;
 }
 
 /** Priced lines for the builder, in the customer's order. Billboards without any rate are skipped. */

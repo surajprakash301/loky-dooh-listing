@@ -1,3 +1,4 @@
+import { rateFor } from "./catalog";
 import { randomBytes } from "node:crypto";
 import { Op } from "sequelize";
 import {
@@ -83,9 +84,9 @@ export async function findCoupon(code: string | undefined): Promise<{ coupon: Co
 export async function computeTotals(d: Pick<QuotationInput, "billboardIds" | "slotSeconds" | "package" | "couponCode" | "marginPct" | "addonCreatives" | "emiEnabled">): Promise<Totals> {
   const screens = await approvedScreens(d.billboardIds);
   const lines: PricingLine[] = screens.map((b) => {
-    const row = (b.pricing ?? []).find((p) => p.slotSeconds === d.slotSeconds && p.package === d.package);
-    if (!row) throw new AgencyError(`${b.name} has no ${d.slotSeconds}s / ${d.package} rate`);
-    return { billboardId: b.id, name: b.name, code: b.code, listPrice: Number(row.listPrice), offerPrice: Number(row.offerPrice) };
+    const r = rateFor(b, d.slotSeconds, d.package);
+    if (!r) throw new AgencyError(`${b.name} has no rates yet`);
+    return { billboardId: b.id, name: b.name, code: b.code, listPrice: r.list, offerPrice: r.offer };
   });
   const baseCost = lines.reduce((s, l) => s + l.offerPrice, 0);
   const { coupon, error } = await findCoupon(d.couponCode);
