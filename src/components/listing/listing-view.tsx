@@ -78,11 +78,13 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const [view, setView] = useState<ViewMode>(initialView);
+  // The view lives in the URL (?view=list|grid|map) so the header's "Map" link, the toggle, back/forward
+  // and a refresh all agree; local state would freeze the first render's view on client navigations.
+  const raw = params.get("view");
+  const view: ViewMode = raw === "grid" || raw === "map" ? raw : raw === "list" ? "list" : initialView;
   const [tier, setTier] = useState<string>("all");
 
   const changeView = (v: ViewMode) => {
-    setView(v);
     const next = new URLSearchParams(params.toString());
     next.set("view", v);
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
