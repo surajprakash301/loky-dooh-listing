@@ -107,11 +107,18 @@ export function toCard(b: Billboard): CardBillboard {
     address: [b.addressLine, b.locality, b.city, b.state, b.pincode].filter(Boolean).join(", "),
     sizeFt: `${Number(b.widthFt)}×${Number(b.heightFt)} ft`,
     screenType: b.screenType.toUpperCase(),
-    perDay: rate(b, 20, "day")?.offer ?? null,
-    perMonth: rate(b, 20, "month")?.offer ?? null,
-    perMonthList: rate(b, 20, "month")?.list ?? null,
+    perDay: bestRate(b, "day")?.offer ?? null,
+    perMonth: bestRate(b, "month")?.offer ?? null,
+    perMonthList: bestRate(b, "month")?.list ?? null,
     reach: b.dailyImpressions,
   };
+}
+
+/** The package's rate for the 20 s slot when priced, else for the site's own (shortest) slot. */
+export function bestRate(b: Billboard, pkg: Package): { list: number; offer: number; slotSeconds: number } | null {
+  const rows = (b.pricing ?? []).filter((p) => p.isActive && p.package === pkg).sort((x, y) => Math.abs(x.slotSeconds - 20) - Math.abs(y.slotSeconds - 20) || x.slotSeconds - y.slotSeconds);
+  const r = rows[0];
+  return r ? { list: Number(r.listPrice), offer: Number(r.offerPrice), slotSeconds: r.slotSeconds } : null;
 }
 
 /** One active pricing row as plain numbers. */

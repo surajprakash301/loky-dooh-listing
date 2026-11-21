@@ -13,6 +13,8 @@
     "db:sync": "node --env-file=.env.local --import tsx scripts/db-sync.ts",
     "db:seed": "node --env-file=.env.local --import tsx scripts/seed.ts",
     "db:reset": "npm run db:sync -- --force && npm run db:seed",
+    "db:import-sites": "npx tsx scripts/import-lokymedia.ts",
+    "db:reseed-sites": "node --env-file=.env.local --import tsx scripts/reseed-sites.ts",
     "deploy:vercel": "bash scripts/deploy-vercel-neon.sh",
     "e2e": "node e2e/onboarding-flow.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",

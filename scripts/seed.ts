@@ -20,6 +20,8 @@ import { Agency, AgencyMember, Brand, Coupon } from "../src/db/agency-models";
 import type { Role } from "../src/lib/domain";
 import { encrypt } from "../src/lib/server/crypto";
 import { hashPassword } from "../src/lib/server/password";
+import { upsertSites } from "./lib/sites";
+import "../src/db/quote-models";
 
 const CATEGORIES = [
   { slug: "road", name: "Road side", icon: "road" },
@@ -82,32 +84,6 @@ async function billboard(vendorId: number, cat: Category, data: Record<string, u
   return b;
 }
 
-/** Monthly list/net for a 20 s slot, with the other slots and packages derived from it. */
-function ratesFrom(list: number, net: number): typeof PRICING {
-  const r = (n: number) => Math.round(n / 100) * 100;
-  return [
-    { slotSeconds: 10, package: "month", listPrice: r(list * 0.6), offerPrice: r(net * 0.6) },
-    { slotSeconds: 20, package: "day", listPrice: r(list / 25), offerPrice: r(net / 25) },
-    { slotSeconds: 20, package: "month", listPrice: list, offerPrice: net },
-    { slotSeconds: 20, package: "quarter", listPrice: list, offerPrice: r(net * 0.95) },
-    { slotSeconds: 20, package: "half_year", listPrice: list, offerPrice: r(net * 0.9) },
-    { slotSeconds: 20, package: "year", listPrice: list, offerPrice: r(net * 0.85) },
-    { slotSeconds: 30, package: "month", listPrice: r(list * 1.45), offerPrice: r(net * 1.45) },
-  ];
-}
-
-const BASE_LED = { tier: "exclusive", screenType: "led", pixelPitch: "P4", refreshRateHz: 3840, brightnessNits: 7500, viewingAngleH: 160, viewingAngleV: 140, opsStart: "09:00", opsEnd: "23:00", loopSeconds: 225, slotsPerLoop: 8, lokySense: true, state: "Bihar", city: "Patna" };
-
-/** The Patna sites from the sales deck, so the map and quotations have a realistic network. */
-const PATNA_SITES: { code: string; name: string; addressLine: string; landmark: string; locality: string; pincode: string; lat: number; lng: number; w: number; h: number; slots: number; reach: number; tier: "exclusive" | "partner" | "operated"; cat: string; screen: "led" | "lcd"; list: number; net: number; photos: string[] }[] = [
-  { code: "01050", name: "Bypass Rd, Mithapur", addressLine: "Bypass Rd, West Ramkrishna Nagar, Mithapur", landmark: "Mithapur bus stand", locality: "Mithapur", pincode: "800030", lat: 25.5918, lng: 85.1414, w: 20, h: 10, slots: 8, reach: 60000, tier: "partner", cat: "road", screen: "led", list: 45000, net: 35499, photos: ["/img/vendor/screen-cyberhub.jpg", "/img/billboard-night.jpg"] },
-  { code: "02010", name: "Patna One Mall Plaza, Dak Bunglow Rd (Dual side screen - 10)", addressLine: "Patna One Mall, New Dak Bunglow Rd, Bander Bagicha, Fraser Road Area", landmark: "Patna One Mall", locality: "Dak Bunglow Rd", pincode: "800001", lat: 25.6098, lng: 85.1368, w: 3, h: 6, slots: 10, reach: 140000, tier: "partner", cat: "mall", screen: "lcd", list: 99999, net: 78499, photos: ["/img/lume-1.jpg", "/img/map-detail.jpg"] },
-  { code: "02020", name: "Lok Nayak Bhawan, Dak Bunglow Chauraha (Dual side screen - 28)", addressLine: "L N, New Dak Bunglow Rd, Bander Bagicha, Fraser Road Area", landmark: "Dak Bunglow Chauraha", locality: "Dak Bunglow Rd", pincode: "800001", lat: 25.6104, lng: 85.1381, w: 3, h: 6, slots: 28, reach: 140000, tier: "partner", cat: "shopping", screen: "lcd", list: 299999, net: 239000, photos: ["/img/lume-2.jpg", "/img/map-detail.jpg"] },
-  { code: "02030", name: "Pushpanjali Palace, Boring Road (Dual side screen - 06)", addressLine: "Pani Tanki, Boring Rd, near Krishna Apartment, Nageshwar Colony, Kidwaipuri", landmark: "Opposite Alankar Palace", locality: "Boring Road", pincode: "800001", lat: 25.6182, lng: 85.1120, w: 3, h: 6, slots: 6, reach: 140000, tier: "partner", cat: "shopping", screen: "lcd", list: 59000, net: 30000, photos: ["/img/lume-3.jpg", "/img/map-detail.jpg"] },
-  { code: "02040", name: "Harihar Chamber, Boring Road (Dual side screen - 16)", addressLine: "Gorakhnath Ln, Kidwaipuri", landmark: "Harihar Chamber", locality: "Boring Road", pincode: "800001", lat: 25.6165, lng: 85.1137, w: 3, h: 6, slots: 16, reach: 135000, tier: "partner", cat: "shopping", screen: "lcd", list: 169000, net: 108000, photos: ["/img/lume-4.jpg", "/img/map-detail.jpg"] },
-  { code: "02050", name: "Surya Crystal Building, Boring Road crossing (Dual side screen - 10)", addressLine: "Boring Rd crossing, Sri Krishna Puri", landmark: "Surya Crystal Building", locality: "Boring Road", pincode: "800001", lat: 25.6186, lng: 85.1096, w: 3, h: 6, slots: 10, reach: 120000, tier: "partner", cat: "road", screen: "lcd", list: 105000, net: 68000, photos: ["/img/offer-1.jpg", "/img/map-detail.jpg"] },
-];
-
 async function main() {
   await sequelize.authenticate();
 
@@ -146,33 +122,12 @@ async function main() {
     for (const docType of ["gst_certificate", "pan_card", "cancelled_cheque", "agreement"] as const) {
       await VendorDocument.create({ vendorId: v.id, docType, fileId: (await staticFile("/img/partner-logo.png", rep.id)).id, docNumber: null, expiresAt: null });
     }
-    const base = BASE_LED;
-    const b1 = await billboard(v.id, cats.road, { ...base, code: "01010", name: "LOKY LUME, JagdevPath, Rukanpura (Biggest Billboard in Patna)", addressLine: "PK Complex, Rukanpura Bailey road, fly over, near Sai corporate", landmark: "Near Sai Corporate", locality: "Rukanpura", pincode: "800014", lat: 25.6093, lng: 85.0732, widthFt: 30, heightFt: 30, dailyImpressions: 103000, description: "Patna's largest LED on the Bailey Road flyover approach." }, { day: ["/img/billboard-day.jpg"], night: ["/img/billboard-night.jpg"] }, rep.id, "approved");
-    const b2 = await billboard(v.id, cats.shopping, { ...base, tier: "partner", lokySense: false, code: "01020", name: "Bulz Ads Digital Billboard - Boring Road Crossing", addressLine: "Boring Road Crossing, opposite Mall", landmark: "Boring Road Crossing", locality: "Boring Road", pincode: "800001", lat: 25.6176, lng: 85.1078, widthFt: 20, heightFt: 10, dailyImpressions: 68000, description: null }, { day: ["/img/vendor/screen-cyberhub.jpg"], night: ["/img/billboard-night.jpg"] }, rep.id, "approved");
-    for (const site of PATNA_SITES) {
-      await billboard(v.id, cats[site.cat], { ...base, tier: site.tier, lokySense: false, screenType: site.screen, code: site.code, name: site.name, addressLine: site.addressLine, landmark: site.landmark, locality: site.locality, pincode: site.pincode, lat: site.lat, lng: site.lng, widthFt: site.w, heightFt: site.h, slotsPerLoop: site.slots, dailyImpressions: site.reach, description: null }, { day: [site.photos[0]], night: site.photos.slice(1) }, rep.id, "approved", ratesFrom(site.list, site.net));
-    }
-    const b3 = await billboard(v.id, cats.airport, { ...base, tier: "operated", code: "01030", name: "Patna Airport Arrivals LED Wall", addressLine: "Jay Prakash Narayan Airport, Arrivals hall", landmark: "Arrivals hall", locality: "Airport", pincode: "800014", lat: 25.5913, lng: 85.0877, widthFt: 16, heightFt: 9, dailyImpressions: 45000, description: null }, { day: ["/img/vendor/screen-airport.jpg"], night: [] }, rep.id, "approved");
+    const { created } = await upsertSites(v.id, rep.id, admin.id);
     for (const s of ["business", "contacts", "documents", "bank"] as const) await ReviewSection.create({ vendorId: v.id, section: s, billboardId: null, status: "approved", remark: null, round: 1, reviewedBy: admin.id, reviewedAt: v.approvedAt });
-    for (const b of [b1, b2, b3]) await ReviewSection.create({ vendorId: v.id, section: "billboard", billboardId: b.id, status: "approved", remark: null, round: 1, reviewedBy: admin.id, reviewedAt: v.approvedAt });
     for (const [action, actorId, at] of [["created", rep.id, "2026-09-18T11:00:00+05:30"], ["submitted", rep.id, "2026-09-20T10:00:00+05:30"], ["credentials_issued", rep.id, "2026-09-20T10:00:00+05:30"], ["vendor_approved", admin.id, "2026-09-22T15:30:00+05:30"]] as const) {
       await OnboardingEvent.create({ vendorId: v.id, actorId, action, createdAt: new Date(at) } as never);
     }
-    console.log("seeded approved vendor Bulz Ads Media (#01010, #01020, #01030)");
-  }
-
-  /* ---- Top-up: deck sites for databases seeded before they existed ---- */
-  {
-    const v = await Vendor.findOne({ where: { gstNumber: "10AABCB1234A1Z5" } });
-    if (v) {
-      let added = 0;
-      for (const site of PATNA_SITES) {
-        if (await Billboard.findOne({ where: { code: site.code } })) continue;
-        await billboard(v.id, cats[site.cat], { ...BASE_LED, tier: site.tier, lokySense: false, screenType: site.screen, code: site.code, name: site.name, addressLine: site.addressLine, landmark: site.landmark, locality: site.locality, pincode: site.pincode, lat: site.lat, lng: site.lng, widthFt: site.w, heightFt: site.h, slotsPerLoop: site.slots, dailyImpressions: site.reach, description: null }, { day: [site.photos[0]], night: site.photos.slice(1) }, rep.id, "approved", ratesFrom(site.list, site.net));
-        added++;
-      }
-      if (added) console.log(`seeded ${added} additional Patna sites for Bulz Ads Media`);
-    }
+    console.log(`seeded approved vendor Bulz Ads Media with ${created.length} live Patna sites from the Loky Media catalogue`);
   }
 
   /* ---- Pending demo vendor so the admin queue has something to review ---- */

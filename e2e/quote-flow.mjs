@@ -30,7 +30,7 @@ ok("map shows pins or clusters", (await page.locator(".loky-pin, .loky-cluster")
 await page.screenshot({ path: `${SHOTS}/map-overview.png` });
 
 // zooming in filters the panel to what is on screen
-await page.click('[data-testid="site-02030"]');
+await page.click('[data-testid="site-00018"]');
 await page.waitForTimeout(1500);
 const zoomed = await panelCount();
 ok(`zoomed-in map filters the side panel (${zoomed} of ${all})`, zoomed < all, String(zoomed));
@@ -38,8 +38,8 @@ ok("clicked site opens the popup card", await page.locator('[data-testid="site-p
 await page.screenshot({ path: `${SHOTS}/map-zoomed.png` });
 
 // add from the popup and from the panel
-await page.locator('[data-testid="site-popup"] [data-testid="add-02030"]').click();
-await page.locator('[data-testid="site-02040"] [data-testid="add-02040"]').click();
+await page.locator('[data-testid="site-popup"] [data-testid="add-00018"]').click();
+await page.locator('[data-testid="site-00027"] [data-testid="add-00027"]').click();
 ok("campaign counter shows 2", (await page.locator('[data-testid="campaign-count"]').textContent()).includes("2"));
 ok("campaign bar appears", await page.locator('[data-testid="campaign-bar"]').isVisible());
 
@@ -55,14 +55,14 @@ ok("pin click opens a popup", await page.locator('[data-testid="site-popup"]').i
 
 /* ---------- 2. list view adds too ---------- */
 await page.goto(`${BASE}/listing`);
-await page.locator('[data-testid="add-01010"]').first().click();
+await page.locator('[data-testid="add-00010"]').first().click();
 await page.waitForTimeout(300);
 ok("list view: selection persists and grows to 3", (await page.locator('[data-testid="campaign-bar"]').textContent()).includes("3"));
 
 /* ---------- 3. quotation builder ---------- */
 await page.click('[data-testid="create-quotation"]');
 await page.waitForURL("**/quote/new");
-await page.waitForSelector('[data-testid="line-02030"]');
+await page.waitForSelector('[data-testid="line-00018"]');
 ok("builder prices all 3 billboards", (await page.locator('tr[data-testid^="line-"]').count()) === 3);
 const total1 = await page.locator('[data-testid="grand-total"]').textContent();
 await page.click('[data-testid="months-3"]');
@@ -118,10 +118,10 @@ ok("advertiser cannot open admin", !page.url().includes("/admin"), page.url());
 
 /* ---------- 6. second quotation while signed in skips OTP ---------- */
 await page.goto(`${BASE}/listing?view=map`);
-await page.waitForSelector('[data-testid="site-02010"]');
-await page.locator('[data-testid="site-02010"] [data-testid="add-02010"]').click();
+await page.waitForSelector('[data-testid="site-00016"]');
+await page.locator('[data-testid="site-00016"] [data-testid="add-00016"]').click();
 await page.goto(`${BASE}/quote/new`);
-await page.waitForSelector('[data-testid="line-02010"]');
+await page.waitForSelector('[data-testid="line-00016"]');
 ok("signed-in builder prefills the mobile number", (await page.inputValue('input[name="phone"]')) === phone);
 await Promise.all([page.waitForURL("**/my/quotations/**"), page.click('button[type="submit"]:has-text("Generate quotation")')]);
 ok("signed-in advertiser gets the quotation directly", page.url().includes("created=1"));

@@ -164,7 +164,7 @@ function PriceBlock({ b, size = "md" }: { b: Billboard; size?: "sm" | "md" }) {
         Premium Placement Rate
       </p>
       <p className={cn("flex items-baseline gap-2 leading-none", size === "md" ? "mt-1" : "mt-0.5")}>
-        <s className={cn("text-muted-ink", size === "md" ? "text-[17px]" : "text-[13px]")}>{formatINR(b.originalPrice)}</s>
+        {b.originalPrice > b.price && <s className={cn("text-muted-ink", size === "md" ? "text-[17px]" : "text-[13px]")}>{formatINR(b.originalPrice)}</s>}
         <span className={cn("font-bold", size === "md" ? "text-[24px]" : "text-[18px]")}>{formatINR(b.price)}/</span>
         <span className={cn("text-green", size === "md" ? "text-[13px]" : "text-[11px]")}>{b.slotLabel}</span>
         <Info className="size-4 self-center text-ink-soft" />

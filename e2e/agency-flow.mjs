@@ -84,7 +84,7 @@ await page.goto(`${BASE}/agency/proposals/new?brand=${brandId}`);
 await page.fill('input[name="title"]', `Festive Launch ${stamp}`); await page.selectOption('select[name="theme"]', "festive");
 await page.setInputFiles('input[name="creatives"]', [FX("day.png")]);
 await page.fill('textarea[name="objective"]', "Youth and retail shoppers on the Boring Road corridor.");
-await page.locator("button", { hasText: "#01010" }).first().click(); await page.locator("button", { hasText: "#01020" }).first().click();
+await page.locator("button", { hasText: "#00010" }).first().click(); await page.locator("button", { hasText: "#00029" }).first().click();
 ok("2 screens selected", (await page.locator("text=2 screens selected").count()) > 0);
 await Promise.all([page.waitForURL(/proposals\/\d+$/), page.click('button:has-text("Render draft proposal")')]);
 const proposalId = page.url().match(/proposals\/(\d+)/)[1];

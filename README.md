@@ -10,7 +10,7 @@ Works on PostgreSQL (Neon) or MySQL 8; uploads go to local disk or Vercel Blob.
 cp .env.local.example .env.local   # then edit DATABASE_URL (postgresql:// or mysql://), JWT_SECRET, ENCRYPTION_KEY
 npm install
 npm run db:sync                    # creates the 12 tables (add -- --force to recreate)
-npm run db:seed                    # categories, staff logins, two demo vendors
+npm run db:seed                    # categories, staff logins, demo vendor + the real Patna sites (scripts/data/lokymedia-sites.json)
 npm run dev                        # http://localhost:3000
 ```
 
@@ -33,6 +33,19 @@ pressing **Create quotation** and entering name, email and mobile creates their 
 find their quotations under **My quotations** (`/my/quotations`); **Orders** is a placeholder for the booking step.
 Every quotation renders as the house-style deck (cover, rate card, summary, one page per location) with a
 **Download PDF** button and a public share link (`/qt/<token>`).
+
+## Billboard catalogue
+
+The billboards are the live Loky Media network, snapshotted from `https://www.lokymedia.com/api/product/list`
+(coordinates resolved from each site's Google Maps link, photos compressed into `public/img/sites/`). To refresh:
+
+```bash
+npm run db:import-sites     # rewrite scripts/data/lokymedia-sites.json + photos from the website API
+npm run db:reseed-sites     # replace every billboard in the database with that snapshot (removes anything else)
+```
+
+`db:reseed-sites` deletes billboards that are not in the snapshot together with their media, rates, review
+rows, campaign screens and quotation lines, so run it against production deliberately.
 
 ## Checks
 

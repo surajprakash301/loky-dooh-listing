@@ -108,7 +108,7 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
                     </div>
                   </td>
                   <td className="px-2 py-3 whitespace-nowrap">{l.locality},<br />{l.city}</td>
-                  <td className="px-2 py-3 text-right whitespace-nowrap text-ink-soft"><s>{inr(l.listPerMonth)}</s></td>
+                  <td className="px-2 py-3 text-right whitespace-nowrap text-ink-soft">{l.listPerMonth > l.netPerMonth ? <s>{inr(l.listPerMonth)}</s> : inr(l.listPerMonth)}</td>
                   <td className="px-2 py-3 text-right font-bold whitespace-nowrap text-green">{inr(l.netPerMonth)}/m</td>
                   <td className="px-2 py-3 text-right font-bold whitespace-nowrap">{inr(l.lineTotal)}</td>
                   <td className="px-3 py-3 text-right">

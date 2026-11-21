@@ -1,0 +1,274 @@
+{
+  "source": "https://www.lokymedia.com/api/product/list",
+  "importedAt": "2026-11-21T19:44:19.265Z",
+  "sites": [
+    {
+      "code": "00010",
+      "sourceId": "68c56c73f7c768b3aec5c8bf",
+      "name": "LOKY LUME, Jagdevpath, Rukanpura (Biggest Billboard in Patna)",
+      "tier": "exclusive",
+      "category": "railway",
+      "addressLine": "PK Complex, Rukanpura Bailey road, fly over, near Sai corporate, Rukanpura",
+      "landmark": "Near Rupas pur Fly-over",
+      "locality": "Rukanpura",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800014",
+      "lat": 25.6076356,
+      "lng": 85.0662701,
+      "screenType": "led",
+      "widthFt": 25,
+      "heightFt": 15,
+      "slotSeconds": 10,
+      "slotOptions": [
+        10
+      ],
+      "dailyImpressions": 100000,
+      "description": "Mixed audience, Office going + shoppers Landmarks: Near Rupaspur flyover, Near Sai Corporate Park, Baily RD flyover in 0.5km, Near Sai Yamaha Showroom.",
+      "pricing": {
+        "perDay": 3500,
+        "perWeek": 19990,
+        "perMonth": 75000,
+        "perQuarter": 149000
+      },
+      "images": [
+        "/img/sites/00010-1.jpg",
+        "/img/sites/00010-2.jpg",
+        "/img/sites/00010-3.jpg",
+        "/img/sites/00010-4.jpg"
+      ],
+      "video": "https://loky-s3-bucket.s3.ap-southeast-1.amazonaws.com/uploads/listing/68c56c73f7c768b3aec5c8bf/listing-1762407509367-fffe31b1a-1762407467286812.mp4",
+      "sourceUpdatedAt": "2026-08-09T12:42:52.244Z"
+    },
+    {
+      "code": "00029",
+      "sourceId": "6a717bf3bdd417d13c666452",
+      "name": "Bypass Rd, Mithapur.",
+      "tier": "partner",
+      "category": "railway",
+      "addressLine": "Bypass Rd, West Ramkrishna Nagar, Mithapur",
+      "landmark": "Chatrapati Shivaji Maharaj Golambar , Bhupatipur Chowk",
+      "locality": "Mithapur",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800030",
+      "lat": 25.5844431,
+      "lng": 85.1335988,
+      "screenType": "led",
+      "widthFt": 20,
+      "heightFt": 10,
+      "slotSeconds": 10,
+      "slotOptions": [
+        10,
+        20,
+        30
+      ],
+      "dailyImpressions": 60000,
+      "description": "Patna in an out area junction, connectivity for urban cities Landmarks: Chatrapati Shivaji Maharaj Golambar , Bhupatipur Chowk, Patna Junction railway station, Mahavir Mandir Patna, Aryabhatta Knowledge University.",
+      "pricing": {
+        "perDay": 2800,
+        "perWeek": 15000,
+        "perMonth": 45000,
+        "perQuarter": 120000
+      },
+      "images": [
+        "/img/sites/00029-1.jpg",
+        "/img/sites/00029-2.jpg"
+      ],
+      "video": null,
+      "sourceUpdatedAt": "2026-08-09T12:41:59.024Z"
+    },
+    {
+      "code": "00027",
+      "sourceId": "690c677a73187af117624e2c",
+      "name": "VARMA CENTER, BOARING Rd Chauraha,",
+      "tier": "partner",
+      "category": "road",
+      "addressLine": "Verma center, 611, Boring Rd, crossing, Chauraha",
+      "landmark": "Boring Road Chauraha SHIV MANDIR",
+      "locality": "Boring Road",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800001",
+      "lat": 25.6125773,
+      "lng": 85.1187182,
+      "screenType": "led",
+      "widthFt": 12,
+      "heightFt": 8,
+      "slotSeconds": 15,
+      "slotOptions": [
+        15,
+        30
+      ],
+      "dailyImpressions": 200000,
+      "description": "Shoppers, student, business peoples (All type) Landmarks: Boring Road Chauraha SHIV MANDIR, Opposite sahara building, Near Mbaazar Mall, Khan Sir coaching Centre.",
+      "pricing": {
+        "perDay": 1200,
+        "perWeek": 6999,
+        "perMonth": 29000,
+        "perQuarter": 84999
+      },
+      "images": [
+        "/img/sites/00027-1.jpg",
+        "/img/sites/00027-2.jpg",
+        "/img/sites/00027-3.jpg",
+        "/img/sites/00027-4.jpg",
+        "/img/sites/00027-5.jpg"
+      ],
+      "video": "https://loky-s3-bucket.s3.ap-southeast-1.amazonaws.com/uploads/listing/690c677a73187af117624e2c/listing-1762420602060-8a25174c7-1762419256898049.mp4",
+      "sourceUpdatedAt": "2026-08-03T06:52:51.858Z"
+    },
+    {
+      "code": "00018",
+      "sourceId": "68ede7df80ce7dca7d218765",
+      "name": "Pushpanjali palace, Boring road (Loky partner)",
+      "tier": "partner",
+      "category": "shopping",
+      "addressLine": "Boring Rd, opposite alankar palace, Nageshwar Colony, Kidwaipuri",
+      "landmark": "Shiv Mandir",
+      "locality": "Boring Road",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800001",
+      "lat": 25.6119256,
+      "lng": 85.1194042,
+      "screenType": "lcd",
+      "widthFt": 3,
+      "heightFt": 6,
+      "slotSeconds": 15,
+      "slotOptions": [
+        15
+      ],
+      "dailyImpressions": 140000,
+      "description": "Student's and shoppers Landmarks: Nearby Titan World showroom, Nearby Harihar Chambers, Boring Rd, Boring Road Chauraha Shiv Mandir, Nearby Varma centre, Boring Rd.",
+      "pricing": {
+        "perDay": 1599,
+        "perWeek": 9999,
+        "perMonth": 39999,
+        "perQuarter": 119999
+      },
+      "images": [
+        "/img/sites/00018-1.jpg",
+        "/img/sites/00018-2.jpg",
+        "/img/sites/00018-3.jpg",
+        "/img/sites/00018-4.jpg"
+      ],
+      "video": null,
+      "sourceUpdatedAt": "2026-08-03T06:52:51.789Z"
+    },
+    {
+      "code": "00017",
+      "sourceId": "68eddd3080ce7dca7d21875d",
+      "name": "Lok Nayak Bhawan Dak Bunglow Charuha ( Dual side - 24 screen)",
+      "tier": "partner",
+      "category": "road",
+      "addressLine": "Lok Nayak Jai Prakash Bhavan, L N, New Dak Bunglow Rd, Bander Bagicha, Fraser Road Area",
+      "landmark": "Dak Bunglow Charuha Patna-1",
+      "locality": "Dak Bunglow Rd",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800001",
+      "lat": 25.6094638,
+      "lng": 85.1372487,
+      "screenType": "lcd",
+      "widthFt": 3,
+      "heightFt": 6,
+      "slotSeconds": 15,
+      "slotOptions": [
+        15
+      ],
+      "dailyImpressions": 200000,
+      "description": "Urban Audience Landmarks: Dak Bunglow Chowraha, Barbeque Nation, Dak Bunglow Chowraha, In front of Hotel Harrison Continental, Vaus Automobiles Maruti Suzuki.",
+      "pricing": {
+        "perDay": 6666,
+        "perWeek": 49999,
+        "perMonth": 199999,
+        "perQuarter": 559999
+      },
+      "images": [
+        "/img/sites/00017-1.jpg",
+        "/img/sites/00017-2.jpg",
+        "/img/sites/00017-3.jpg"
+      ],
+      "video": "https://loky-s3-bucket.s3.ap-southeast-1.amazonaws.com/uploads/listing/68eddd3080ce7dca7d21875d/listing-1762345240229-7d2c5ed86-89FBE487-EC57-43FB-B79C-E65A8CE5878D.MP4",
+      "sourceUpdatedAt": "2026-08-03T06:52:51.721Z"
+    },
+    {
+      "code": "00016",
+      "sourceId": "68edd5f680ce7dca7d218724",
+      "name": "PATNA ONE MALL PLAZA, Dak Bunglow Rd ( Dual side Screen - 10 )",
+      "tier": "partner",
+      "category": "mall",
+      "addressLine": "Patna One Mall, New Dak Bunglow Rd, Bander Bagicha, Fraser Road Area, Patna, Bihar 800001",
+      "landmark": "Dak Bunglow Chowraha",
+      "locality": "Dak Bunglow Rd",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800001",
+      "lat": 25.6098343,
+      "lng": 85.1367826,
+      "screenType": "lcd",
+      "widthFt": 3,
+      "heightFt": 6,
+      "slotSeconds": 15,
+      "slotOptions": [
+        15
+      ],
+      "dailyImpressions": 140000,
+      "description": "Mixed crowd, Office going plus shoppers Landmarks: Dak Bunglow Chowraha, Barbeque Nation, Dak Bunglow Chowraha, In front of HP petrol pump, Vaus Automobiles Maruti Suzuki.",
+      "pricing": {
+        "perDay": 3500,
+        "perWeek": 19499,
+        "perMonth": 77999,
+        "perQuarter": 195000
+      },
+      "images": [
+        "/img/sites/00016-1.jpg",
+        "/img/sites/00016-2.jpg",
+        "/img/sites/00016-3.jpg",
+        "/img/sites/00016-4.jpg",
+        "/img/sites/00016-5.jpg"
+      ],
+      "video": "https://loky-s3-bucket.s3.ap-southeast-1.amazonaws.com/uploads/listing/68edd5f680ce7dca7d218724/listing-1762410944848-be959d960-1762409866924504.mp4",
+      "sourceUpdatedAt": "2026-08-03T06:52:51.653Z"
+    },
+    {
+      "code": "00015",
+      "sourceId": "68edd15d80ce7dca7d2186f6",
+      "name": "WINDSOR HOTEL, Exhibition Rd, Fraser Rd Area.",
+      "tier": "partner",
+      "category": "railway",
+      "addressLine": "Windsor, Exhibition Rd, Fraser Road Area",
+      "landmark": "Chiraiyatand Flyover",
+      "locality": "Exhibition Rd",
+      "city": "Patna",
+      "state": "Bihar",
+      "pincode": "800001",
+      "lat": 25.60864,
+      "lng": 85.141635,
+      "screenType": "led",
+      "widthFt": 20,
+      "heightFt": 30,
+      "slotSeconds": 15,
+      "slotOptions": [
+        15
+      ],
+      "dailyImpressions": 140000,
+      "description": "Down Traffic View + Flyover Traffic which connect 3 major part of partna Landmarks: Chiraiyatand Flyover, Patna Junction railway station -1km (5min), Near Exhibition Rd, Chauraha, Golambar, also visible from Patna - Parsa - Siwan hwy flyover.",
+      "pricing": {
+        "perDay": 3500,
+        "perWeek": 19499,
+        "perMonth": 77999,
+        "perQuarter": 195000
+      },
+      "images": [
+        "/img/sites/00015-1.jpg",
+        "/img/sites/00015-2.jpg",
+        "/img/sites/00015-3.jpg",
+        "/img/sites/00015-4.jpg"
+      ],
+      "video": null,
+      "sourceUpdatedAt": "2026-08-04T05:47:29.221Z"
+    }
+  ]
+}
