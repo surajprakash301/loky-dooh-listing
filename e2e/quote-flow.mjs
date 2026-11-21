@@ -25,7 +25,8 @@ await page.waitForSelector(".leaflet-container .leaflet-tile-loaded", { timeout:
 await page.waitForSelector(".loky-pin, .loky-cluster");
 const panelCount = async () => Number((await page.locator('[data-testid="map-panel"] p').first().textContent()).match(/\d+/)[0]);
 const all = await panelCount();
-ok(`map lists every located site in view (${all})`, all >= 9, String(all));
+const chip = Number((await page.locator("text=/\\d+ sites? · \\d+ slots/").first().textContent()).match(/(\d+) sites?/)[1]);
+ok(`map lists every located site in view (${all} of ${chip})`, all === chip && all > 0, `${all} vs ${chip}`);
 ok("map shows pins or clusters", (await page.locator(".loky-pin, .loky-cluster").count()) > 0);
 await page.screenshot({ path: `${SHOTS}/map-overview.png` });
 
