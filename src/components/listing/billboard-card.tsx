@@ -127,7 +127,7 @@ function StatTiles({ b, compact = false }: { b: Billboard; compact?: boolean }) 
     : "border-sky-tier/60 border-b-sky-tier bg-sky-tint";
   const { stats } = b;
   const tiles = [
-    { label: ["Daily", "Impression"], value: <><b>{stats.dailyImpression}</b>{compact ? <span className="text-[10px]">/day</span> : <span className="text-[11px]">/per day.</span>}</> },
+    { label: ["Daily", "Impression"], value: <><b>{stats.dailyImpression}</b><span className={compact ? "text-[10px]" : "text-[11px]"}>/day</span></> },
     { label: ["Loop", "Time"], value: <><b>{stats.loopTime.m}</b><span className="text-[11px]">m</span> : <b>{stats.loopTime.s}</b><span className="text-[11px]">s</span></> },
     { label: ["Display", "Tech"], value: <><b>{stats.displayTech.value}</b>{stats.displayTech.value !== stats.displayTech.unit && stats.displayTech.value !== "LCD" && <span className="text-[11px]"> {stats.displayTech.unit}</span>}</> },
     { label: ["Ad's", "slots,"], value: <span className="font-bold text-green">{stats.adSlots.used}<span className="text-ink">/</span>{stats.adSlots.total}</span> },

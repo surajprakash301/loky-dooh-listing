@@ -25,7 +25,7 @@ await page.waitForSelector(".leaflet-container .leaflet-tile-loaded", { timeout:
 await page.waitForSelector(".loky-pin, .loky-cluster");
 const panelCount = async () => Number((await page.locator('[data-testid="map-panel"] p').first().textContent()).match(/\d+/)[0]);
 const all = await panelCount();
-const chip = Number((await page.locator("text=/\\d+ sites? · \\d+ slots/").first().textContent()).match(/(\d+) sites?/)[1]);
+const chip = Number((await page.locator("text=/\\d+ sites? · \\d+ screens/").first().textContent()).match(/(\d+) sites?/)[1]);
 ok(`map lists every located site in view (${all} of ${chip})`, all === chip && all > 0, `${all} vs ${chip}`);
 ok("map shows pins or clusters", (await page.locator(".loky-pin, .loky-cluster").count()) > 0);
 await page.screenshot({ path: `${SHOTS}/map-overview.png` });
@@ -41,7 +41,7 @@ await page.screenshot({ path: `${SHOTS}/map-zoomed.png` });
 // add from the popup and from the panel
 await page.locator('[data-testid="site-popup"] [data-testid="add-00018"]').click();
 await page.locator('[data-testid="site-00027"] [data-testid="add-00027"]').click();
-ok("campaign counter shows 2", (await page.locator('[data-testid="campaign-count"]').textContent()).includes("2"));
+ok("campaign pill shows 2 and leads to the quotation", (await page.locator('[data-testid="campaign-count"]').textContent()).includes("2") && (await page.locator('[data-testid="campaign-count"]').getAttribute("href")) === "/quote/new");
 ok("campaign bar appears", await page.locator('[data-testid="campaign-bar"]').isVisible());
 
 // "Show all" brings everything back

@@ -4,8 +4,8 @@ import { LayoutGrid, List, Map as MapIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { BillboardCardHorizontal, BillboardCardVertical } from "@/components/listing/billboard-card";
-import { FiltersSidebar } from "@/components/listing/filters-sidebar";
 import { MapExplorer } from "@/components/listing/map-explorer";
+import { SideMap } from "@/components/listing/side-map";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { type Billboard, tierFilters } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -92,27 +92,10 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
 
   const filtered = tier === "all" ? items : items.filter((b) => b.tier === tier);
 
-  if (view === "map") {
-    return (
-      <div>
-        <div className="mx-auto flex max-w-[1512px] items-center justify-between gap-4 px-8 py-3">
-          <div className="min-w-0">
-            <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Digital OOH", href: "/listing" }, { label: "Map" }]} />
-            <h1 className="mt-1 truncate text-[20px] font-medium">{heading}</h1>
-          </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <TierChips value={tier} onChange={setTier} />
-            <ViewToggle value={view} onChange={changeView} />
-          </div>
-        </div>
-        <MapExplorer items={filtered} />
-      </div>
-    );
-  }
+  if (view === "map") return <MapExplorer items={items} />;
 
   return (
-    <div className="mx-auto flex max-w-[1512px] gap-8 px-8 pt-5 pb-16">
-      <FiltersSidebar className="hidden lg:block" />
+    <div className="mx-auto max-w-[1512px] px-8 pt-4 pb-16">
 
       <div className="min-w-0 flex-1">
         <Breadcrumb
@@ -122,9 +105,9 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
             { label: crumb },
           ]}
         />
-        <h1 className="mt-3 text-[24px] font-medium">{heading}</h1>
+        <h1 className="mt-2 text-[22px] font-medium">{heading}</h1>
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <TierChips value={tier} onChange={setTier} />
           <ViewToggle value={view} onChange={changeView} />
         </div>
@@ -136,16 +119,19 @@ export function ListingView({ items, initialView, heading, crumb }: { items: Bil
             </div>
           )}
           {view === "grid" ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {filtered.map((b, i) => (
                 <BillboardCardVertical key={`${b.id}-${i}`} b={b} compare={i >= 3 && b.tier === "partner"} />
               ))}
             </div>
           ) : (
-            <div className="flex min-w-0 flex-1 flex-col gap-5">
-              {filtered.map((b, i) => (
-                <BillboardCardHorizontal key={`${b.id}-${i}`} b={b} />
-              ))}
+            <div className="flex flex-col items-stretch gap-6 min-[1440px]:flex-row min-[1440px]:items-start">
+              <div className="flex min-w-0 flex-1 flex-col gap-5">
+                {filtered.map((b, i) => (
+                  <BillboardCardHorizontal key={`${b.id}-${i}`} b={b} />
+                ))}
+              </div>
+              {filtered.length > 0 && <SideMap items={filtered} className="hidden h-[min(560px,calc(100vh-2rem))] w-[380px] shrink-0 min-[1440px]:sticky min-[1440px]:top-4 min-[1440px]:block min-[1680px]:w-[420px]" />}
             </div>
           )}
 

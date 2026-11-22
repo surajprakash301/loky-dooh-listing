@@ -12,12 +12,12 @@ export function LocalityChips({ items = popularLocalities, active }: { items?: {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="shrink-0 text-[15px] text-link">Popular localities</span>
+      <span className="shrink-0 text-[13px] text-link">Popular localities</span>
       <button
         type="button"
         onClick={() => scroll(-1)}
         aria-label="Scroll left"
-        className="grid size-7 shrink-0 place-items-center rounded-full border border-line bg-white text-muted-ink/50"
+        className="grid size-6 shrink-0 place-items-center rounded-full border border-line bg-white text-muted-ink/50"
       >
         <ChevronLeft className="size-4" />
       </button>
@@ -26,7 +26,7 @@ export function LocalityChips({ items = popularLocalities, active }: { items?: {
           <Link
             key={l.name}
             href={active === l.name ? "/listing" : `/listing?locality=${encodeURIComponent(l.name)}`}
-            className={cn("flex h-8 shrink-0 items-center gap-2 rounded-full border bg-white px-3.5 text-[13px] hover:border-ink/30", active === l.name ? "border-green font-bold text-green" : "border-line text-ink-soft")}
+            className={cn("flex h-7 shrink-0 items-center gap-1.5 rounded-full border bg-white px-3 text-[12.5px] whitespace-nowrap hover:border-ink/30", active === l.name ? "border-green font-bold text-green" : "border-line text-ink-soft")}
           >
             {l.name}
             {l.count && (
@@ -41,11 +41,11 @@ export function LocalityChips({ items = popularLocalities, active }: { items?: {
         type="button"
         onClick={() => scroll(1)}
         aria-label="Scroll right"
-        className="grid size-7 shrink-0 place-items-center rounded-full border border-ink/40 bg-white text-ink"
+        className="grid size-6 shrink-0 place-items-center rounded-full border border-ink/40 bg-white text-ink"
       >
         <ChevronRight className="size-4" />
       </button>
-      <Link href="/listing" className="shrink-0 text-[15px] font-bold text-indigo-brand">
+      <Link href="/listing" className="shrink-0 text-[13px] font-bold whitespace-nowrap text-indigo-brand">
         Reset filters
       </Link>
     </div>

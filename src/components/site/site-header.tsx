@@ -13,9 +13,9 @@ type Variant = "listing" | "detail" | "home";
 
 const NAV: Record<Variant, { label: string; href: string; caret?: boolean; active?: boolean; upper?: boolean }[]> = {
   listing: [
-    { label: "LOKY LUME", href: "/listing" },
-    { label: "MAP", href: "/listing?view=map" },
-    { label: "LOKY AI", href: "#" },
+    { label: "All DOOH", href: "/listing" },
+    { label: "Map", href: "/listing?view=map" },
+    { label: "Loky AI", href: "#" },
     { label: "Media Service's", href: "#", caret: true },
     { label: "Resources", href: "#", caret: true },
   ],
@@ -53,7 +53,7 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
         <nav
           className={cn(
             "hidden items-center md:flex",
-            variant === "listing" ? "gap-6 text-[13px] font-bold" : "gap-7 text-[15px] font-medium",
+            variant === "listing" ? "gap-7 text-[14px] font-medium" : "gap-7 text-[15px] font-medium",
           )}
         >
           {NAV[variant].map((item) => (

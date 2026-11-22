@@ -12,6 +12,7 @@ export type MapSite = {
   lat: number;
   lng: number;
   reach: number;
+  screens?: number;
 };
 
 export type Bounds = { north: number; south: number; east: number; west: number };
@@ -26,34 +27,44 @@ type Props = {
   fitKey: number;
   /** pan to this site when it changes */
   focus: string | null;
+  /** false for a small embedded map with nothing floating over it */
+  floatingPanel?: boolean;
 };
 
-type PointProps = { code: string; name: string; locality: string; reach: number };
+type PointProps = { code: string; name: string; locality: string; reach: number; screens: number };
 
 const PIN = (color: string, ring: string) =>
   `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 39C15 39 28 24.5 28 14.5A13 13 0 0 0 2 14.5C2 24.5 15 39 15 39Z" fill="${color}" stroke="${ring}" stroke-width="2"/><circle cx="15" cy="14.5" r="5" fill="#fff"/></svg>`;
 
-function pinIcon(state: "default" | "selected" | "active") {
-  const svg = state === "active" ? PIN("#0f0f0f", "#fff") : state === "selected" ? PIN("#16E17A", "#0f5132") : PIN("#e5484d", "#fff");
+function pinIcon(state: "default" | "selected" | "active", screens: number) {
+  const fill = state === "active" ? "#121212" : state === "selected" ? "#10ad5d" : "#e5342b";
+  const inner = screens > 1
+    ? `<circle cx="15" cy="14.5" r="8" fill="#fff"/><text x="15" y="18.6" text-anchor="middle" font-size="${screens > 9 ? 9.5 : 11}" font-weight="900" font-family="system-ui,sans-serif" fill="${fill}">${screens}</text>`
+    : `<circle cx="15" cy="14.5" r="4.8" fill="#fff"/>`;
+  const svg = `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 39C15 39 28 24.5 28 14.5A13 13 0 0 0 2 14.5C2 24.5 15 39 15 39Z" fill="${fill}" stroke="#fff" stroke-width="1.5"/>${inner}</svg>`;
   return L.divIcon({ html: svg, className: "loky-pin", iconSize: [30, 40], iconAnchor: [15, 39] });
 }
 
-function clusterIcon(count: number, names: string[]) {
-  const size = count >= 20 ? 54 : count >= 10 ? 48 : 42;
+function clusterIcon(screens: number, names: string[]) {
+  const size = 44;
   return L.divIcon({
-    html: `<div class="loky-cluster" style="width:${size}px;height:${size}px"><b>${count}</b><span>${names.length} site${names.length === 1 ? "" : "s"}</span></div>`,
+    html: `<div class="loky-cluster" style="width:${size}px;height:${size}px"><b>${screens}</b><span>${names.length} site${names.length === 1 ? "" : "s"}</span></div>`,
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
 }
 
+/** Pixels of the map hidden under the floating site list (desktop only) and the filter bar. */
+const insetFor = (floating: boolean) => (width: number): [number, number] => (floating ? [width >= 1024 ? 396 : 0, 76] : [0, 0]);
+
 /** Thin imperative wrapper around Leaflet + supercluster. Everything else (panel, cards) is React. */
-export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey, focus }: Props) {
+export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey, focus, floatingPanel = true }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
   const index = useRef<Supercluster<PointProps> | null>(null);
+  const inset = insetFor(floatingPanel);
   const latest = useRef({ selected, active, onActive, onBounds });
   useEffect(() => {
     latest.current = { selected, active, onActive, onBounds };
@@ -75,9 +86,9 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
         const id = props.cluster_id;
         const leaves = idx.getLeaves(id, 50);
         const names = leaves.map((l) => l.properties.name);
-        const mk = L.marker([lat, lng], { icon: clusterIcon(props.point_count, names) });
+        const mk = L.marker([lat, lng], { icon: clusterIcon(leaves.reduce((n, l) => n + l.properties.screens, 0), names) });
         mk.bindTooltip(
-          `<div class="loky-tip"><b>${names.length} sites</b><ul>${names.slice(0, 6).map((n) => `<li>${n}</li>`).join("")}${names.length > 6 ? `<li>+${names.length - 6} more</li>` : ""}</ul><i>Click to zoom in</i></div>`,
+          `<div class="loky-tip"><b>${names.length} sites · ${leaves.reduce((n, l) => n + l.properties.screens, 0)} screens</b><ul>${names.slice(0, 6).map((n) => `<li>${n}</li>`).join("")}${names.length > 6 ? `<li>+${names.length - 6} more</li>` : ""}</ul><i>Click to zoom in</i></div>`,
           { direction: "top", offset: [0, -24], opacity: 1 },
         );
         mk.on("click", () => m.setView([lat, lng], Math.min(idx.getClusterExpansionZoom(id), 18), { animate: true }));
@@ -85,7 +96,7 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
       } else {
         const p = c.properties as PointProps;
         const state = latest.current.active === p.code ? "active" : latest.current.selected.includes(p.code) ? "selected" : "default";
-        const mk = L.marker([lat, lng], { icon: pinIcon(state), zIndexOffset: state === "active" ? 1000 : 0 });
+        const mk = L.marker([lat, lng], { icon: pinIcon(state, p.screens), zIndexOffset: state === "active" ? 1000 : 0 });
         mk.bindTooltip(`<div class="loky-tip"><b>${p.name}</b><span>${p.locality}</span></div>`, { direction: "top", offset: [0, -36], opacity: 1 });
         mk.on("click", () => latest.current.onActive(p.code));
         mk.addTo(g);
@@ -97,7 +108,8 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = L.map(el.current, { zoomControl: false, attributionControl: true, scrollWheelZoom: true });
-    L.control.zoom({ position: "topright" }).addTo(m);
+    L.control.zoom({ position: "bottomright" }).addTo(m);
+    if (floatingPanel) L.control.scale({ position: "bottomright", imperial: false }).addTo(m);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -105,8 +117,12 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
     layer.current = L.layerGroup().addTo(m);
     m.setView([25.6093, 85.1376], 12);
     const emit = () => {
-      const b = m.getBounds();
-      latest.current.onBounds({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() }, m.getZoom());
+      // "in view" = the part of the map not covered by the floating panel (left) and filter bar (top)
+      const sz = m.getSize();
+      const [padL, padT] = inset(sz.x);
+      const nw = m.containerPointToLatLng([padL, padT]);
+      const se = m.containerPointToLatLng([sz.x, sz.y]);
+      latest.current.onBounds({ north: nw.lat, south: se.lat, east: se.lng, west: nw.lng }, m.getZoom());
       draw();
     };
     m.on("moveend zoomend", emit);
@@ -133,7 +149,7 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
       sites.map((s) => ({
         type: "Feature" as const,
         geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
-        properties: { code: s.code, name: s.name, locality: s.locality, reach: s.reach },
+        properties: { code: s.code, name: s.name, locality: s.locality, reach: s.reach, screens: s.screens ?? 1 },
       })),
     );
     index.current = idx;
@@ -150,7 +166,8 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
     const m = map.current;
     if (!m || !sites.length) return;
     const b = L.latLngBounds(sites.map((s) => [s.lat, s.lng] as [number, number]));
-    m.fitBounds(b.pad(0.15), { maxZoom: 14 });
+    const [padL, padT] = inset(m.getSize().x);
+    m.fitBounds(b, { paddingTopLeft: [padL + (floatingPanel ? 50 : 30), padT + (floatingPanel ? 60 : 40)], paddingBottomRight: floatingPanel ? [72, 60] : [30, 30], maxZoom: floatingPanel ? 14 : 13 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitKey, sites.length]);
 
@@ -159,7 +176,10 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
     const m = map.current;
     const s = sites.find((x) => x.code === focus);
     if (!m || !s) return;
-    m.setView([s.lat, s.lng], Math.max(m.getZoom(), 15), { animate: true });
+    const z = Math.max(m.getZoom(), 15);
+    const [padL] = inset(m.getSize().x);
+    const pt = m.project([s.lat, s.lng], z).subtract([padL / 2, 0]);
+    m.setView(m.unproject(pt, z), z, { animate: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focus]);
 

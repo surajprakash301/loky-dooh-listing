@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { ListingView, type ViewMode } from "@/components/listing/listing-view";
 import { CategoryTabs } from "@/components/site/category-tabs";
 import { LocalityChips } from "@/components/site/locality-chips";
-import { SearchBar } from "@/components/site/search-bar";
 import { CampaignBar } from "@/components/campaign/campaign-bar";
 import { SiteHeader } from "@/components/site/site-header";
 import { listPublicBillboards, localityCounts, toCard } from "@/services/catalog";
@@ -26,18 +25,14 @@ export default async function ListingPage(props: PageProps<"/listing">) {
       <SiteHeader variant="listing" />
       <CampaignBar />
 
-      <div className="bg-page">
-        <div className="mx-auto max-w-[1512px] space-y-3 px-8 pt-3 pb-3">
-          <SearchBar />
-          <LocalityChips items={localities} active={filters.locality} />
+      {view !== "map" && (
+        <div className="border-b border-line bg-white">
+          <div className="mx-auto flex max-w-[1512px] flex-col gap-1 px-8 pt-2">
+            <LocalityChips items={localities} active={filters.locality} />
+            <CategoryTabs active={filters.category ?? "all"} view={view} />
+          </div>
         </div>
-      </div>
-
-      <div className="border-y border-line bg-white">
-        <div className="mx-auto max-w-[1512px] px-8">
-          <CategoryTabs ctaStyle={view === "grid" ? "text" : "pill"} active={filters.category ?? "all"} view={view} />
-        </div>
-      </div>
+      )}
 
       <Suspense>
         <ListingView items={items} initialView={view} heading={heading} crumb={`${items.length} billboard${items.length === 1 ? "" : "s"}${filters.locality ? ` in ${filters.locality}` : ""}`} />
