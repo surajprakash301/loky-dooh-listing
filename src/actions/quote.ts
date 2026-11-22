@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession, setSessionCookie } from "@/lib/server/auth";
 import { fieldErrors, otpSchema, phoneLoginSchema, quoteSchema } from "@/lib/validation";
+import { hasFile } from "@/services/files";
 import * as quotes from "@/services/quotes";
 import { type ActionState, failed, messageOf, str, toObject } from "./types";
 
@@ -42,7 +43,8 @@ export async function createQuotationAction(_: ActionState, fd: FormData): Promi
   const session = await getSession();
   let target: string;
   try {
-    const { quotation, user } = await quotes.createQuotation(parsed.data, session);
+    const logo = fd.get("logo");
+    const { quotation, user } = await quotes.createQuotation({ ...parsed.data, logo: hasFile(logo) ? logo : null }, session);
     target = `/orders/quotations/${quotation.id}?created=1`;
     if (session?.uid !== user.id) {
       // new or returning advertiser without a session: confirm the mobile number in the sign-in popup

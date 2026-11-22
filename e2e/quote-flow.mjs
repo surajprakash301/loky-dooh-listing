@@ -77,6 +77,8 @@ await page.screenshot({ path: `${SHOTS}/quote-builder.png`, fullPage: true });
 // validation keeps values
 await page.fill('input[name="name"]', "Abhinav Verma");
 await page.fill('input[name="company"]', "Eyverse OOH Agency");
+await page.setInputFiles('[data-testid="quote-builder"] input[type="file"]', decodeURIComponent(new URL("./fixtures/logo.png", import.meta.url).pathname));
+ok("brand logo preview appears in the form", (await page.locator('[data-testid="logo-preview"]').count()) === 1);
 await page.fill('input[name="email"]', email);
 await page.fill('input[name="phone"]', "12345");
 await page.click('button[type="submit"]:has-text("Generate quotation")');
@@ -104,6 +106,7 @@ ok("created notice shown", await page.locator('[data-testid="created-notice"]').
 const pages = await page.locator(".q-page").count();
 ok(`quotation document has cover, rates, summary, divider, 3 locations and thank-you (${pages})`, pages === 8, String(pages));
 const docText = await page.locator('[data-testid="quotation-doc"]').textContent();
+ok("cover shows the brand logo beside the company name", (await page.locator('[data-testid="quote-logo"] img').count()) === 1 && (await page.locator('[data-testid="quote-logo"] img').evaluate((i) => i.complete && i.naturalWidth > 0)));
 ok("document names the client company", docText.includes("Eyverse OOH Agency"));
 ok("document carries GST line and grand total", docText.includes("18% GST") && docText.includes("GRAND TOTAL"));
 ok("header shows the advertiser's name", (await page.locator("header").textContent()).includes("Abhinav"));

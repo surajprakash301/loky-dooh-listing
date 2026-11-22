@@ -4,6 +4,7 @@ import { GST_PCT, QUOTE_VALID_DAYS, packageForMonths, type Package, type QuoteSt
 import { hashPassword, temporaryPassword } from "@/lib/server/password";
 import type { SessionPayload } from "@/lib/session";
 import { listByCodes, mediaUrls, rateFor } from "./catalog";
+import { storeUpload } from "./files";
 
 export class QuoteError extends Error {}
 
@@ -107,11 +108,16 @@ async function nextNumber(): Promise<string> {
   return `LKY-Q${ym}-${String(n).padStart(4, "0")}`;
 }
 
-export async function createQuotation(d: { name: string; email: string; phone: string; company?: string; months: number; slotSeconds: number; codes: string[] }, session: SessionPayload | null) {
+const LOGO_MAX = 2 * 1024 * 1024;
+
+export async function createQuotation(d: { name: string; email: string; phone: string; company?: string; months: number; slotSeconds: number; codes: string[]; logo?: File | null }, session: SessionPayload | null) {
+  if (d.logo && !d.logo.type.startsWith("image/")) throw new QuoteError("The brand logo must be an image (PNG, JPG, SVG or WebP).");
+  if (d.logo && d.logo.size > LOGO_MAX) throw new QuoteError("The brand logo must be under 2 MB.");
   const lines = await quoteLines(d.codes, d.months, d.slotSeconds);
   if (!lines.length) throw new QuoteError("None of the selected billboards has rates for that slot length yet.");
   const { user, created } = await ensureCustomer(d, session);
   const t = totals(lines);
+  const logoFileId = d.logo ? (await storeUpload(d.logo, user.id, { public: true })).id : null;
   const quotation = await sequelize.transaction(async (tx) => {
     let number = await nextNumber();
     while (await CustomerQuotation.findOne({ where: { number }, transaction: tx })) number = `${number}-${randomInt(10, 99)}`;
@@ -124,6 +130,7 @@ export async function createQuotation(d: { name: string; email: string; phone: s
         clientEmail: d.email.toLowerCase(),
         clientPhone: normPhone(d.phone),
         company: d.company?.trim() || null,
+        logoFileId,
         city: lines[0].city,
         months: d.months,
         slotSeconds: d.slotSeconds,
@@ -145,7 +152,7 @@ export async function createQuotation(d: { name: string; email: string; phone: s
   return { quotation, user, created };
 }
 
-const ITEM_INCLUDE = [{ model: CustomerQuotationItem, as: "items", include: [{ model: Billboard, as: "billboard", include: [{ association: "media", include: ["file"] }, { association: "category" }] }] }];
+const ITEM_INCLUDE = [{ association: "logo" }, { model: CustomerQuotationItem, as: "items", include: [{ model: Billboard, as: "billboard", include: [{ association: "media", include: ["file"] }, { association: "category" }] }] }];
 
 export async function listMyQuotations(userId: number) {
   const rows = await CustomerQuotation.findAll({ where: { userId }, include: ITEM_INCLUDE, order: [["createdAt", "DESC"]] });

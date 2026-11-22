@@ -1,5 +1,5 @@
 import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model, NonAttribute } from "sequelize";
-import { Billboard, User, sequelize } from "./models";
+import { Billboard, File, User, sequelize } from "./models";
 import { QUOTE_STATUSES, type Package, type QuoteStatus } from "@/lib/domain";
 
 const ID = { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true } as const;
@@ -19,6 +19,8 @@ export class CustomerQuotation extends Model<InferAttributes<CustomerQuotation>,
   declare clientEmail: string;
   declare clientPhone: string;
   declare company: string | null;
+  /** Brand logo uploaded with the quotation (optional), shown beside the company name. */
+  declare logoFileId: ForeignKey<File["id"]> | null;
   declare city: string;
   declare months: number;
   declare slotSeconds: number;
@@ -32,6 +34,7 @@ export class CustomerQuotation extends Model<InferAttributes<CustomerQuotation>,
   declare updatedAt: CreationOptional<Date>;
   declare items?: NonAttribute<CustomerQuotationItem[]>;
   declare user?: NonAttribute<User>;
+  declare logo?: NonAttribute<File | null>;
 }
 CustomerQuotation.init(
   {
@@ -44,6 +47,7 @@ CustomerQuotation.init(
     clientEmail: { type: DataTypes.STRING(191), allowNull: false },
     clientPhone: { type: DataTypes.STRING(20), allowNull: false },
     company: { type: DataTypes.STRING(120), allowNull: true },
+    logoFileId: { type: DataTypes.INTEGER, allowNull: true },
     city: { type: DataTypes.STRING(80), allowNull: false },
     months: { type: DataTypes.SMALLINT, allowNull: false },
     slotSeconds: { type: DataTypes.SMALLINT, allowNull: false },
@@ -88,7 +92,9 @@ CustomerQuotationItem.init(
 );
 
 CustomerQuotation.belongsTo(User, { as: "user", foreignKey: "userId" });
-User.hasMany(CustomerQuotation, { as: "quotations", foreignKey: "userId" });
+CustomerQuotation.belongsTo(File, { as: "logo", foreignKey: "logoFileId", constraints: false });
+// guarded: in development this module can be re-evaluated by hot reload while `User` (models.ts) is not
+if (!User.associations.quotations) User.hasMany(CustomerQuotation, { as: "quotations", foreignKey: "userId" });
 CustomerQuotation.hasMany(CustomerQuotationItem, { as: "items", foreignKey: "quotationId", onDelete: "CASCADE" });
 CustomerQuotationItem.belongsTo(CustomerQuotation, { as: "quotation", foreignKey: "quotationId" });
 CustomerQuotationItem.belongsTo(Billboard, { as: "billboard", foreignKey: "billboardId" });

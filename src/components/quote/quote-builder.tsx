@@ -13,6 +13,44 @@ import { formatINR, formatImpressions } from "@/lib/format";
 import type { QuoteLine } from "@/services/quotes";
 import { cn } from "@/lib/utils";
 
+/** Optional brand logo with an instant preview; sent with the form and shown beside the company name. */
+function LogoField({ onFile }: { onFile: (f: File | null) => void }) {
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <div>
+      <span className="text-[13.5px] font-semibold">Brand logo <span className="font-normal text-ink-soft">(optional)</span></span>
+      <label className="mt-1.5 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-ink/25 bg-page px-3 py-2.5 hover:border-green">
+        <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-white text-[10px] text-ink-soft">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {preview ? <img src={preview} alt="Logo preview" className="size-full object-contain" data-testid="logo-preview" /> : "Logo"}
+        </span>
+        <span className="min-w-0 text-[12.5px] text-ink-soft">
+          <b className="block text-[13px] text-ink">{preview ? "Change logo" : "Upload logo"}</b>
+          PNG, JPG, SVG or WebP, under 2 MB
+        </span>
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          className="sr-only"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            setError(null);
+            if (!f) return; // dialog cancelled: keep the current logo
+            if (f.size > 2 * 1024 * 1024) {
+              e.target.value = "";
+              return setError("That file is over 2 MB. Choose a smaller logo.");
+            }
+            onFile(f);
+            setPreview(URL.createObjectURL(f));
+          }}
+        />
+      </label>
+      {error && <p className="mt-1 text-[12px] text-coral">{error}</p>}
+    </div>
+  );
+}
+
 type Prefill = { name?: string; email?: string; phone?: string };
 
 const inr = (n: number) => formatINR(n, { space: true });
@@ -24,6 +62,13 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
   const [lines, setLines] = useState<QuoteLine[] | null>(null);
   const [pending, start] = useTransition();
   const [state, action] = useActionState(createQuotationAction, idle);
+  // The logo is kept in state, not in the file input: React clears uncontrolled inputs after a failed
+  // submit (e.g. a mistyped mobile number), which would silently drop the chosen file.
+  const [logo, setLogo] = useState<File | null>(null);
+  const submit = (fd: FormData) => {
+    if (logo) fd.set("logo", logo);
+    return action(fd);
+  };
 
   useEffect(() => {
     if (codes.length === 0) return;
@@ -50,7 +95,7 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
   }
 
   return (
-    <form action={action} className="grid gap-8 lg:grid-cols-[1fr_380px]" data-testid="quote-builder">
+    <form action={submit} className="grid gap-8 lg:grid-cols-[1fr_380px]" data-testid="quote-builder">
       <input type="hidden" name="codes" value={JSON.stringify(codes)} />
       <input type="hidden" name="months" value={months} />
       <input type="hidden" name="slotSeconds" value={slot} />
@@ -135,6 +180,7 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
           {state.error && <Notice tone="error">{state.error}</Notice>}
           <Field label="Full name" name="name" error={state.errors?.name} required><TextInput name="name" autoComplete="name" defaultValue={state.values?.name ?? prefill.name ?? ""} error={state.errors?.name} /></Field>
           <Field label="Company / brand" name="company" error={state.errors?.company}><TextInput name="company" autoComplete="organization" defaultValue={state.values?.company ?? ""} placeholder="Optional" /></Field>
+          <LogoField onFile={setLogo} />
           <Field label="Email" name="email" error={state.errors?.email} required><TextInput name="email" type="email" autoComplete="email" defaultValue={state.values?.email ?? prefill.email ?? ""} error={state.errors?.email} /></Field>
           <Field label="Mobile number" name="phone" error={state.errors?.phone} required><TextInput name="phone" inputMode="numeric" autoComplete="tel" maxLength={10} placeholder="10-digit mobile" defaultValue={state.values?.phone ?? prefill.phone ?? ""} error={state.errors?.phone} /></Field>
           <SubmitButton className="mt-1 w-full" pendingText="Preparing your quotation…">Generate quotation</SubmitButton>

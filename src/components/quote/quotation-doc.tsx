@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { CustomerQuotation } from "@/db";
 import { formatDateLong, formatINR, formatNumber } from "@/lib/format";
 import { mediaUrls } from "@/services/catalog";
+import { fileUrl } from "@/services/files";
 import { cn } from "@/lib/utils";
 
 const CONTACT = { phone: "+91 7091688336", email: "support@lokymedia.com", sales: "surajprakash@lokymedia.com", site: "www.lokymedia.com" };
@@ -32,6 +33,7 @@ const date = (d: Date) => d.toLocaleDateString("en-GB", { day: "2-digit", month:
 export function QuotationDoc({ q }: { q: CustomerQuotation }) {
   const items = [...(q.items ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
   const who = q.company?.trim() || q.clientName;
+  const logo = fileUrl(q.logo);
   const reach = items.reduce((n, i) => n + (i.billboard?.dailyImpressions ?? 0), 0);
   const screens = items.reduce((n, i) => n + (i.billboard?.slotsPerLoop ?? 0), 0);
   const areas = Array.from(new Set(items.map((i) => i.billboard?.locality).filter(Boolean)));
@@ -43,7 +45,15 @@ export function QuotationDoc({ q }: { q: CustomerQuotation }) {
         <div className="absolute top-[7%] left-[5%] h-[10%] w-[18%]"><Image src="/img/logo-light.png" alt="Loky Media" fill className="object-contain object-left" priority /></div>
         <p className="absolute top-[8%] right-[6%] text-[1.4cqw] text-brand">{date(q.createdAt)}</p>
         <div className="absolute top-[22%] left-[5%] w-[45%] bg-[#2ee59d] py-[0.9%] text-center text-[1.3cqw] font-bold text-ink">CAMPAIGN PROPOSAL &amp; QUOTATION for DOOH.</div>
-        <h1 className="font-anton absolute top-[36%] left-[5%] max-w-[88%] text-[6.4cqw] leading-none uppercase">{who}.</h1>
+        <div className="absolute top-[34%] left-[5%] flex max-w-[90%] items-center gap-[2.2cqw]">
+          {logo && (
+            <div className="grid h-[11cqw] w-[11cqw] shrink-0 place-items-center overflow-hidden rounded-[1cqw] bg-white p-[0.8cqw]" data-testid="quote-logo">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logo} alt={`${who} logo`} className="max-h-full max-w-full object-contain" />
+            </div>
+          )}
+          <h1 className="font-anton min-w-0 text-[6.4cqw] leading-none uppercase">{who}.</h1>
+        </div>
         <p className="absolute top-[62%] left-[6%] text-[2cqw] text-white/75">Prepared for {q.clientName}</p>
         <p className="absolute top-[69%] left-[6%] text-[2cqw] text-white/75">{q.clientEmail} · +91 {q.clientPhone}</p>
         <div className="absolute inset-x-[5%] bottom-[5%] flex items-center justify-between border border-[#2a5a40] px-[3%] py-[3%]">
