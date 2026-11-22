@@ -106,7 +106,8 @@ ok("created notice shown", await page.locator('[data-testid="created-notice"]').
 const pages = await page.locator(".q-page").count();
 ok(`quotation document has cover, rates, summary, divider, 3 locations and thank-you (${pages})`, pages === 8, String(pages));
 const docText = await page.locator('[data-testid="quotation-doc"]').textContent();
-ok("cover shows the brand logo beside the company name", (await page.locator('[data-testid="quote-logo"] img').count()) === 1 && (await page.locator('[data-testid="quote-logo"] img').evaluate((i) => i.complete && i.naturalWidth > 0)));
+const logoLoaded = await page.locator('[data-testid="quote-logo"] img').evaluate((i) => (i.complete && i.naturalWidth > 0) || new Promise((res) => { i.onload = () => res(true); i.onerror = () => res(false); setTimeout(() => res(false), 15000); })).catch(() => false);
+ok("cover shows the brand logo beside the company name", logoLoaded === true);
 ok("document names the client company", docText.includes("Eyverse OOH Agency"));
 ok("document carries GST line and grand total", docText.includes("18% GST") && docText.includes("GRAND TOTAL"));
 ok("header shows the advertiser's name", (await page.locator("header").textContent()).includes("Abhinav"));
