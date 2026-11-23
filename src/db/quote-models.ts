@@ -27,7 +27,7 @@ Voucher.init(
     isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     ...TS,
   },
-  { sequelize, tableName: "vouchers" },
+  { sequelize, modelName: "Voucher", tableName: "vouchers" },
 );
 
 /* ---------- customer_quotations: a self-serve quote built from the marketplace / map ---------- */
@@ -91,7 +91,7 @@ CustomerQuotation.init(
     validUntil: { type: DataTypes.DATE(3), allowNull: false },
     ...TS,
   },
-  { sequelize, tableName: "customer_quotations", indexes: [{ fields: ["user_id"] }] },
+  { sequelize, modelName: "CustomerQuotation", tableName: "customer_quotations", indexes: [{ fields: ["user_id"] }] },
 );
 
 /* ---------- customer_quotation_items: one row per billboard, prices frozen at quote time ---------- */
@@ -120,7 +120,7 @@ CustomerQuotationItem.init(
     lineTotal: { ...MONEY },
     createdAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "customer_quotation_items", updatedAt: false, indexes: [{ fields: ["quotation_id"] }] },
+  { sequelize, modelName: "CustomerQuotationItem", tableName: "customer_quotation_items", updatedAt: false, indexes: [{ fields: ["quotation_id"] }] },
 );
 
 CustomerQuotation.belongsTo(User, { as: "user", foreignKey: "userId" });

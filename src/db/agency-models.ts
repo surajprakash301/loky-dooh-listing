@@ -60,7 +60,7 @@ Agency.init({
   partnerSince: { type: DataTypes.DATE(3), allowNull: true },
   expertCallbackDueAt: { type: DataTypes.DATE(3), allowNull: true },
   ...TS,
-}, { sequelize, tableName: "agencies", indexes: [{ fields: ["status"] }] });
+}, { sequelize, modelName: "Agency", tableName: "agencies", indexes: [{ fields: ["status"] }] });
 
 /* ---------- otp_codes ---------- */
 export class OtpCode extends Model<InferAttributes<OtpCode>, InferCreationAttributes<OtpCode>> {
@@ -76,7 +76,7 @@ OtpCode.init({
   id: { ...ID }, userId: { ...FK }, channel: { type: DataTypes.ENUM("email", "mobile"), allowNull: false },
   code: { type: DataTypes.STRING(8), allowNull: false }, expiresAt: { type: DataTypes.DATE(3), allowNull: false }, consumedAt: { type: DataTypes.DATE(3), allowNull: true },
   createdAt: DataTypes.DATE(3),
-}, { sequelize, tableName: "otp_codes", updatedAt: false, indexes: [{ fields: ["user_id", "channel"] }] });
+}, { sequelize, modelName: "OtpCode", tableName: "otp_codes", updatedAt: false, indexes: [{ fields: ["user_id", "channel"] }] });
 
 /* ---------- agency_members ---------- */
 export class AgencyMember extends Model<InferAttributes<AgencyMember>, InferCreationAttributes<AgencyMember>> {
@@ -93,7 +93,7 @@ export class AgencyMember extends Model<InferAttributes<AgencyMember>, InferCrea
 AgencyMember.init({
   id: { ...ID }, agencyId: { ...FK }, userId: { ...FK, unique: true }, title: { type: DataTypes.STRING(120), allowNull: false },
   isOwner: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }, ...TS,
-}, { sequelize, tableName: "agency_members", indexes: [{ fields: ["agency_id"] }] });
+}, { sequelize, modelName: "AgencyMember", tableName: "agency_members", indexes: [{ fields: ["agency_id"] }] });
 
 /* ---------- agency_assessments ---------- */
 export class AgencyAssessment extends Model<InferAttributes<AgencyAssessment>, InferCreationAttributes<AgencyAssessment>> {
@@ -111,7 +111,7 @@ AgencyAssessment.init({
   id: { ...ID }, agencyId: { ...FK }, services: { type: DataTypes.JSON, allowNull: false }, sectors: { type: DataTypes.JSON, allowNull: false },
   portfolioSize: { type: DataTypes.ENUM(...PORTFOLIO_SIZES), allowNull: false }, doohExperience: { type: DataTypes.ENUM(...DOOH_EXPERIENCE), allowNull: false },
   score: { type: DataTypes.DECIMAL(4, 1), allowNull: false }, commissionPct: { type: DataTypes.DECIMAL(4, 1), allowNull: false }, createdAt: DataTypes.DATE(3),
-}, { sequelize, tableName: "agency_assessments", updatedAt: false });
+}, { sequelize, modelName: "AgencyAssessment", tableName: "agency_assessments", updatedAt: false });
 
 /* ---------- brands ---------- */
 export class Brand extends Model<InferAttributes<Brand>, InferCreationAttributes<Brand>> {
@@ -138,7 +138,7 @@ Brand.init({
   id: { ...ID }, agencyId: { ...FK }, name: { type: DataTypes.STRING(191), allowNull: false }, hq: { type: DataTypes.STRING(191), allowNull: true },
   category: { type: DataTypes.STRING(80), allowNull: true }, website: { type: DataTypes.STRING(191), allowNull: true }, logoFileId: { ...FK_NULL }, managerMemberId: { ...FK_NULL },
   status: { type: DataTypes.ENUM(...BRAND_STATUSES), allowNull: false, defaultValue: "upcoming" }, lockedUntil: { type: DataTypes.DATE(3), allowNull: true }, ...TS,
-}, { sequelize, tableName: "brands", indexes: [{ fields: ["agency_id"] }] });
+}, { sequelize, modelName: "Brand", tableName: "brands", indexes: [{ fields: ["agency_id"] }] });
 
 /* ---------- brand_assets ---------- */
 export class BrandAsset extends Model<InferAttributes<BrandAsset>, InferCreationAttributes<BrandAsset>> {
@@ -157,7 +157,7 @@ export class BrandAsset extends Model<InferAttributes<BrandAsset>, InferCreation
 BrandAsset.init({
   id: { ...ID }, brandId: { ...FK }, fileId: { ...FK }, name: { type: DataTypes.STRING(191), allowNull: false }, version: { type: DataTypes.SMALLINT, allowNull: false, defaultValue: 1 },
   specs: { type: DataTypes.STRING(120), allowNull: true }, status: { type: DataTypes.ENUM(...ASSET_STATUSES), allowNull: false, defaultValue: "reviewing" }, ...TS,
-}, { sequelize, tableName: "brand_assets", indexes: [{ fields: ["brand_id"] }] });
+}, { sequelize, modelName: "BrandAsset", tableName: "brand_assets", indexes: [{ fields: ["brand_id"] }] });
 
 /* ---------- proposals ---------- */
 export class Proposal extends Model<InferAttributes<Proposal>, InferCreationAttributes<Proposal>> {
@@ -184,7 +184,7 @@ Proposal.init({
   theme: { type: DataTypes.ENUM(...PROPOSAL_THEMES), allowNull: false, defaultValue: "aesthetic" }, objective: { type: DataTypes.TEXT, allowNull: true },
   status: { type: DataTypes.ENUM(...PROPOSAL_STATUSES), allowNull: false, defaultValue: "draft" }, shareToken: { type: DataTypes.STRING(40), allowNull: false, unique: true },
   viewCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }, showAgencyLogo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }, ...TS,
-}, { sequelize, tableName: "proposals", indexes: [{ fields: ["agency_id"] }, { fields: ["brand_id"] }] });
+}, { sequelize, modelName: "Proposal", tableName: "proposals", indexes: [{ fields: ["agency_id"] }, { fields: ["brand_id"] }] });
 
 export class ProposalItem extends Model<InferAttributes<ProposalItem>, InferCreationAttributes<ProposalItem>> {
   declare id: CreationOptional<number>;
@@ -193,7 +193,7 @@ export class ProposalItem extends Model<InferAttributes<ProposalItem>, InferCrea
   declare sortOrder: CreationOptional<number>;
   declare billboard?: NonAttribute<Billboard>;
 }
-ProposalItem.init({ id: { ...ID }, proposalId: { ...FK }, billboardId: { ...FK }, sortOrder: { type: DataTypes.SMALLINT, allowNull: false, defaultValue: 0 } }, { sequelize, tableName: "proposal_items", timestamps: false, indexes: [{ unique: true, fields: ["proposal_id", "billboard_id"] }] });
+ProposalItem.init({ id: { ...ID }, proposalId: { ...FK }, billboardId: { ...FK }, sortOrder: { type: DataTypes.SMALLINT, allowNull: false, defaultValue: 0 } }, { sequelize, modelName: "ProposalItem", tableName: "proposal_items", timestamps: false, indexes: [{ unique: true, fields: ["proposal_id", "billboard_id"] }] });
 
 export class ProposalFile extends Model<InferAttributes<ProposalFile>, InferCreationAttributes<ProposalFile>> {
   declare id: CreationOptional<number>;
@@ -201,7 +201,7 @@ export class ProposalFile extends Model<InferAttributes<ProposalFile>, InferCrea
   declare fileId: ForeignKey<File["id"]>;
   declare file?: NonAttribute<File>;
 }
-ProposalFile.init({ id: { ...ID }, proposalId: { ...FK }, fileId: { ...FK } }, { sequelize, tableName: "proposal_files", timestamps: false });
+ProposalFile.init({ id: { ...ID }, proposalId: { ...FK }, fileId: { ...FK } }, { sequelize, modelName: "ProposalFile", tableName: "proposal_files", timestamps: false });
 
 /* ---------- coupons ---------- */
 export class Coupon extends Model<InferAttributes<Coupon>, InferCreationAttributes<Coupon>> {
@@ -219,7 +219,7 @@ Coupon.init({
   id: { ...ID }, code: { type: DataTypes.STRING(40), allowNull: false, unique: true }, type: { type: DataTypes.ENUM(...COUPON_TYPES), allowNull: false },
   value: { type: DataTypes.DECIMAL(12, 2), allowNull: false }, description: { type: DataTypes.STRING(191), allowNull: true },
   isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }, expiresAt: { type: DataTypes.DATE(3), allowNull: true }, ...TS,
-}, { sequelize, tableName: "coupons" });
+}, { sequelize, modelName: "Coupon", tableName: "coupons" });
 
 /* ---------- quotations ---------- */
 export class Quotation extends Model<InferAttributes<Quotation>, InferCreationAttributes<Quotation>> {
@@ -262,7 +262,7 @@ Quotation.init({
   addonCreatives: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }, addonAmount: { ...MONEY }, total: { ...MONEY },
   emiEnabled: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }, lockUntil: { type: DataTypes.DATE(3), allowNull: true },
   viewCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }, ...TS,
-}, { sequelize, tableName: "quotations", indexes: [{ fields: ["agency_id"] }, { fields: ["brand_id"] }] });
+}, { sequelize, modelName: "Quotation", tableName: "quotations", indexes: [{ fields: ["agency_id"] }, { fields: ["brand_id"] }] });
 
 export class QuotationItem extends Model<InferAttributes<QuotationItem>, InferCreationAttributes<QuotationItem>> {
   declare id: CreationOptional<number>;
@@ -272,7 +272,7 @@ export class QuotationItem extends Model<InferAttributes<QuotationItem>, InferCr
   declare offerPrice: number;
   declare billboard?: NonAttribute<Billboard>;
 }
-QuotationItem.init({ id: { ...ID }, quotationId: { ...FK }, billboardId: { ...FK }, listPrice: { ...MONEY }, offerPrice: { ...MONEY } }, { sequelize, tableName: "quotation_items", timestamps: false, indexes: [{ unique: true, fields: ["quotation_id", "billboard_id"] }] });
+QuotationItem.init({ id: { ...ID }, quotationId: { ...FK }, billboardId: { ...FK }, listPrice: { ...MONEY }, offerPrice: { ...MONEY } }, { sequelize, modelName: "QuotationItem", tableName: "quotation_items", timestamps: false, indexes: [{ unique: true, fields: ["quotation_id", "billboard_id"] }] });
 
 /* ---------- campaigns (media orders) ---------- */
 export class Campaign extends Model<InferAttributes<Campaign>, InferCreationAttributes<Campaign>> {
@@ -311,7 +311,7 @@ Campaign.init({
   slotSeconds: { type: DataTypes.SMALLINT, allowNull: false }, package: { type: DataTypes.ENUM(...PACKAGES), allowNull: false },
   startDate: { type: DataTypes.DATEONLY, allowNull: false }, endDate: { type: DataTypes.DATEONLY, allowNull: false },
   agreementFileId: { ...FK_NULL }, signedAt: { type: DataTypes.DATE(3), allowNull: true }, confirmedAt: { type: DataTypes.DATE(3), allowNull: true }, liveAt: { type: DataTypes.DATE(3), allowNull: true }, ...TS,
-}, { sequelize, tableName: "campaigns", indexes: [{ fields: ["agency_id", "status"] }, { fields: ["brand_id"] }] });
+}, { sequelize, modelName: "Campaign", tableName: "campaigns", indexes: [{ fields: ["agency_id", "status"] }, { fields: ["brand_id"] }] });
 
 export class CampaignScreen extends Model<InferAttributes<CampaignScreen>, InferCreationAttributes<CampaignScreen>> {
   declare id: CreationOptional<number>;
@@ -321,7 +321,7 @@ export class CampaignScreen extends Model<InferAttributes<CampaignScreen>, Infer
   declare billboard?: NonAttribute<Billboard>;
   declare campaign?: NonAttribute<Campaign>;
 }
-CampaignScreen.init({ id: { ...ID }, campaignId: { ...FK }, billboardId: { ...FK }, amount: { ...MONEY } }, { sequelize, tableName: "campaign_screens", timestamps: false, indexes: [{ fields: ["billboard_id"] }] });
+CampaignScreen.init({ id: { ...ID }, campaignId: { ...FK }, billboardId: { ...FK }, amount: { ...MONEY } }, { sequelize, modelName: "CampaignScreen", tableName: "campaign_screens", timestamps: false, indexes: [{ fields: ["billboard_id"] }] });
 
 /* ---------- payments ---------- */
 export class Payment extends Model<InferAttributes<Payment>, InferCreationAttributes<Payment>> {
@@ -344,7 +344,7 @@ Payment.init({
   id: { ...ID }, campaignId: { ...FK }, agencyId: { ...FK }, kind: { type: DataTypes.ENUM(...PAYMENT_KINDS), allowNull: false }, installmentNo: { type: DataTypes.SMALLINT, allowNull: false, defaultValue: 1 },
   amount: { ...MONEY }, dueDate: { type: DataTypes.DATEONLY, allowNull: false }, status: { type: DataTypes.ENUM(...PAYMENT_STATUSES), allowNull: false, defaultValue: "pending" },
   paidAt: { type: DataTypes.DATE(3), allowNull: true }, method: { type: DataTypes.STRING(40), allowNull: true }, reference: { type: DataTypes.STRING(80), allowNull: true }, ...TS,
-}, { sequelize, tableName: "payments", indexes: [{ fields: ["agency_id", "status"] }, { fields: ["campaign_id"] }] });
+}, { sequelize, modelName: "Payment", tableName: "payments", indexes: [{ fields: ["agency_id", "status"] }, { fields: ["campaign_id"] }] });
 
 /* ---------- wallet_transactions ---------- */
 export class WalletTransaction extends Model<InferAttributes<WalletTransaction>, InferCreationAttributes<WalletTransaction>> {
@@ -359,7 +359,7 @@ export class WalletTransaction extends Model<InferAttributes<WalletTransaction>,
 WalletTransaction.init({
   id: { ...ID }, agencyId: { ...FK }, kind: { type: DataTypes.ENUM(...WALLET_KINDS), allowNull: false }, amount: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
   note: { type: DataTypes.STRING(191), allowNull: true }, campaignId: { ...FK_NULL }, createdAt: DataTypes.DATE(3),
-}, { sequelize, tableName: "wallet_transactions", updatedAt: false, indexes: [{ fields: ["agency_id"] }] });
+}, { sequelize, modelName: "WalletTransaction", tableName: "wallet_transactions", updatedAt: false, indexes: [{ fields: ["agency_id"] }] });
 
 /* ---------- agency_activity ---------- */
 export class AgencyActivity extends Model<InferAttributes<AgencyActivity>, InferCreationAttributes<AgencyActivity>> {
@@ -373,7 +373,7 @@ export class AgencyActivity extends Model<InferAttributes<AgencyActivity>, Infer
 }
 AgencyActivity.init({
   id: { ...ID }, agencyId: { ...FK }, actorId: { ...FK_NULL }, action: { type: DataTypes.ENUM(...AGENCY_EVENTS), allowNull: false }, message: { type: DataTypes.STRING(255), allowNull: false }, createdAt: DataTypes.DATE(3),
-}, { sequelize, tableName: "agency_activity", updatedAt: false, indexes: [{ fields: ["agency_id", "created_at"] }] });
+}, { sequelize, modelName: "AgencyActivity", tableName: "agency_activity", updatedAt: false, indexes: [{ fields: ["agency_id", "created_at"] }] });
 
 /* ---------- associations (guarded: dev hot-reload re-evaluates this module while the core models persist) ---------- */
 if (!User.associations.agencyMembership) {

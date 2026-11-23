@@ -78,7 +78,7 @@ User.init(
     createdAt: DataTypes.DATE(3),
     updatedAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "users" },
+  { sequelize, modelName: "User", tableName: "users" },
 );
 
 /* ---------- files ---------- */
@@ -104,7 +104,7 @@ File.init(
     uploadedBy: { ...FK },
     createdAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "files", updatedAt: false },
+  { sequelize, modelName: "File", tableName: "files", updatedAt: false },
 );
 
 /* ---------- vendors ---------- */
@@ -166,6 +166,7 @@ Vendor.init(
   },
   {
     sequelize,
+    modelName: "Vendor",
     tableName: "vendors",
     indexes: [{ fields: ["status"] }, { fields: ["onboarded_by", "status"] }],
   },
@@ -196,7 +197,7 @@ VendorContact.init(
     createdAt: DataTypes.DATE(3),
     updatedAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "vendor_contacts", indexes: [{ fields: ["vendor_id"] }] },
+  { sequelize, modelName: "VendorContact", tableName: "vendor_contacts", indexes: [{ fields: ["vendor_id"] }] },
 );
 
 /* ---------- vendor_bank_accounts ---------- */
@@ -231,7 +232,7 @@ VendorBankAccount.init(
     createdAt: DataTypes.DATE(3),
     updatedAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "vendor_bank_accounts" },
+  { sequelize, modelName: "VendorBankAccount", tableName: "vendor_bank_accounts" },
 );
 
 /* ---------- vendor_documents ---------- */
@@ -259,7 +260,7 @@ VendorDocument.init(
     createdAt: DataTypes.DATE(3),
     updatedAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "vendor_documents", indexes: [{ fields: ["vendor_id"] }] },
+  { sequelize, modelName: "VendorDocument", tableName: "vendor_documents", indexes: [{ fields: ["vendor_id"] }] },
 );
 
 /* ---------- categories ---------- */
@@ -279,7 +280,7 @@ Category.init(
     icon: { type: DataTypes.STRING(40), allowNull: false },
     sortOrder: { type: DataTypes.SMALLINT, allowNull: false, defaultValue: 0 },
   },
-  { sequelize, tableName: "categories", timestamps: false },
+  { sequelize, modelName: "Category", tableName: "categories", timestamps: false },
 );
 
 /* ---------- billboards ---------- */
@@ -364,6 +365,7 @@ Billboard.init(
   },
   {
     sequelize,
+    modelName: "Billboard",
     tableName: "billboards",
     indexes: [{ fields: ["status", "city", "locality"] }, { fields: ["vendor_id"] }, { fields: ["category_id"] }],
   },
@@ -394,7 +396,7 @@ BillboardMedia.init(
     createdAt: DataTypes.DATE(3),
     updatedAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "billboard_media", indexes: [{ fields: ["billboard_id"] }] },
+  { sequelize, modelName: "BillboardMedia", tableName: "billboard_media", indexes: [{ fields: ["billboard_id"] }] },
 );
 
 /* ---------- billboard_slot_pricing ---------- */
@@ -427,6 +429,7 @@ BillboardSlotPricing.init(
   },
   {
     sequelize,
+    modelName: "BillboardSlotPricing",
     tableName: "billboard_slot_pricing",
     indexes: [{ unique: true, fields: ["billboard_id", "slot_seconds", "package"] }],
   },
@@ -468,6 +471,7 @@ ReviewSection.init(
   },
   {
     sequelize,
+    modelName: "ReviewSection",
     tableName: "review_sections",
     indexes: [{ unique: true, fields: ["vendor_id", "section", "billboard_id"] }],
   },
@@ -497,7 +501,7 @@ OnboardingEvent.init(
     remark: { type: DataTypes.TEXT, allowNull: true },
     createdAt: DataTypes.DATE(3),
   },
-  { sequelize, tableName: "onboarding_events", updatedAt: false, indexes: [{ fields: ["vendor_id", "created_at"] }] },
+  { sequelize, modelName: "OnboardingEvent", tableName: "onboarding_events", updatedAt: false, indexes: [{ fields: ["vendor_id", "created_at"] }] },
 );
 
 /* ---------- associations (guarded against hot-reload double registration) ---------- */
