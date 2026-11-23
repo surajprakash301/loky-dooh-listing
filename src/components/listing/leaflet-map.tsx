@@ -33,9 +33,6 @@ type Props = {
 
 type PointProps = { code: string; name: string; locality: string; reach: number; screens: number };
 
-const PIN = (color: string, ring: string) =>
-  `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 39C15 39 28 24.5 28 14.5A13 13 0 0 0 2 14.5C2 24.5 15 39 15 39Z" fill="${color}" stroke="${ring}" stroke-width="2"/><circle cx="15" cy="14.5" r="5" fill="#fff"/></svg>`;
-
 function pinIcon(state: "default" | "selected" | "active", screens: number) {
   const fill = state === "active" ? "#121212" : state === "selected" ? "#10ad5d" : "#e5342b";
   const inner = screens > 1

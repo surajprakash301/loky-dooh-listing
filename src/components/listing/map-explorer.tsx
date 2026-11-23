@@ -3,12 +3,13 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ExternalLink, Expand, FileText, Info, MapPin, X } from "lucide-react";
+import { ExternalLink, Expand, FileText, Info, MapPin, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddToCampaignButton } from "@/components/campaign/add-button";
+import { FilterMenu } from "@/components/listing/filter-menu";
 import type { Bounds, MapSite } from "@/components/listing/leaflet-map";
 import { useCampaign } from "@/lib/campaign-store";
-import { type Billboard, TIER_LABEL, formatINR } from "@/lib/data";
+import { type Billboard, formatINR } from "@/lib/data";
 import { formatImpressions } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -61,31 +62,14 @@ function Price({ b, size = "md" }: { b: Billboard; size?: "sm" | "md" }) {
   );
 }
 
-function Dropdown({ label, value, options, onChange }: { label: string; value: string; options: { id: string; label: string }[]; onChange: (v: string) => void }) {
-  return (
-    <label className="relative inline-flex h-9 shrink-0 items-center rounded-full border border-line bg-white pr-8 pl-4 text-[13px] font-medium whitespace-nowrap hover:border-ink/40">
-      <span className="text-ink-soft">{label}</span>
-      {value !== "all" && <span className="ml-1 text-ink">· {options.find((o) => o.id === value)?.label}</span>}
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" aria-label={label}>
-        {options.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="absolute right-3 size-4 text-ink-soft" />
-    </label>
-  );
-}
-
 /** Live map view: pins for every approved billboard with coordinates; the side panel follows the viewport. */
 export function MapExplorer({ items }: { items: Billboard[] }) {
   const selected = useCampaign();
   const located = useMemo(() => items.filter(hasCoords), [items]);
-  const [area, setArea] = useState("all");
-  const [display, setDisplay] = useState("all");
-  const [tier, setTier] = useState("all");
-  const [size, setSize] = useState("all");
+  const [area, setArea] = useState<string[]>([]);
+  const [display, setDisplay] = useState<string[]>([]);
+  const [tier, setTier] = useState<string[]>([]);
+  const [size, setSize] = useState<string[]>([]);
   const [keyOpen, setKeyOpen] = useState(false);
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [active, setActive] = useState<string | null>(null);
@@ -96,7 +80,7 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
   const sizes = useMemo(() => Array.from(new Set(located.map((b) => b.sizeFt ?? ""))).filter(Boolean).sort(), [located]);
   const displays = useMemo(() => Array.from(new Set(located.map((b) => b.screenType ?? ""))).filter(Boolean).sort(), [located]);
   const filtered = useMemo(
-    () => located.filter((b) => (area === "all" || b.locality === area) && (display === "all" || b.screenType === display) && (tier === "all" || b.tier === tier) && (size === "all" || b.sizeFt === size)),
+    () => located.filter((b) => (!area.length || area.includes(b.locality)) && (!display.length || display.includes(b.screenType ?? "")) && (!tier.length || tier.includes(b.tier)) && (!size.length || size.includes(b.sizeFt ?? ""))),
     [located, area, display, tier, size],
   );
   const sites: MapSite[] = useMemo(() => filtered.map((b) => ({ code: b.code, name: b.name, locality: b.locality, lat: b.lat, lng: b.lng, reach: b.reach ?? 0, screens: screenCount(b.name) })), [filtered]);
@@ -116,14 +100,19 @@ export function MapExplorer({ items }: { items: Billboard[] }) {
       </div>
 
       {/* floating filter bar */}
-      <div className="absolute inset-x-3 top-3 z-[500] flex items-center gap-2 overflow-x-auto rounded-2xl border border-line bg-white/95 px-3 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.10)] backdrop-blur no-scrollbar">
+      <div className="absolute inset-x-3 top-3 z-[550] flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white/95 px-3 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.10)] backdrop-blur">
         <span className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-page px-4 text-[13px] whitespace-nowrap">
           <MapPin className="size-3.5 text-coral" /> <b>{city}</b> <span className="text-ink-soft">· {filtered.length} site{filtered.length === 1 ? "" : "s"} · {screens} screens</span>
         </span>
-        <Dropdown label="Area" value={area} options={[{ id: "all", label: "All areas" }, ...areas.map((a) => ({ id: a, label: a }))]} onChange={setArea} />
-        <Dropdown label="Display" value={display} options={[{ id: "all", label: "All displays" }, ...displays.map((d) => ({ id: d, label: d }))]} onChange={setDisplay} />
-        <Dropdown label="Size" value={size} options={[{ id: "all", label: "All sizes" }, ...sizes.map((d) => ({ id: d, label: d }))]} onChange={setSize} />
-        <Dropdown label="Partner" value={tier} options={[{ id: "all", label: "All partners" }, { id: "exclusive", label: TIER_LABEL.exclusive }, { id: "partner", label: TIER_LABEL.partner }, { id: "operated", label: TIER_LABEL.operated }]} onChange={setTier} />
+        <FilterMenu label="Area" options={areas.map((a) => ({ id: a, label: a, hint: `${located.filter((b) => b.locality === a).length} site${located.filter((b) => b.locality === a).length === 1 ? "" : "s"}` }))} selected={area} onChange={setArea} />
+        <FilterMenu label="Display" options={displays.map((d) => ({ id: d, label: d, hint: d === "LED" ? "Large outdoor LED" : d === "LCD" ? "Standee and indoor LCD" : undefined }))} selected={display} onChange={setDisplay} />
+        <FilterMenu label="Size" options={sizes.map((d) => ({ id: d, label: d }))} selected={size} onChange={setSize} />
+        <FilterMenu label="Partner" options={[{ id: "exclusive", label: "Loky Exclusive", hint: "Owned and run by Loky" }, { id: "partner", label: "Loky Partner", hint: "Verified partner screens" }, { id: "operated", label: "Loky Operated", hint: "Operated by Loky for the owner" }]} selected={tier} onChange={setTier} />
+        {area.length + display.length + size.length + tier.length > 0 && (
+          <button type="button" onClick={() => { setArea([]); setDisplay([]); setSize([]); setTier([]); }} className="shrink-0 px-2 text-[13px] font-bold whitespace-nowrap text-green hover:underline">
+            Clear all
+          </button>
+        )}
         <Link
           href="/quote/new"
           className={cn("ml-auto inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-bold whitespace-nowrap", selected.length ? "btn-3d bg-brand text-ink" : "border border-line bg-page text-ink-soft hover:border-ink/30")}
