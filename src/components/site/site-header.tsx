@@ -55,9 +55,6 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
             <Suspense><SiteNav /></Suspense>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <Link href="/agency/register" className="btn-loky-cta hidden h-10 items-center rounded-full px-4 font-[family-name:var(--font-manrope)] text-[14px] font-semibold whitespace-nowrap lg:flex">
-              Become a LOKY Partner
-            </Link>
             {session ? (
               <>
                 <Link href={session.role === "customer" ? "/orders" : homeFor(session.role)} className={pill} data-testid="orders-link">

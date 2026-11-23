@@ -9,8 +9,8 @@ const MENUS: { id: string; label: string; href?: string; items?: Item[] }[] = [
   { id: "dooh", label: "All DOOH", href: "/listing" },
   { id: "map", label: "Map", href: "/listing?view=map" },
   { id: "ai", label: "Loky AI", href: "/quote/new" },
-  { id: "services", label: "Media Service's", items: [{ label: "Create a quotation", href: "/quote/new" }, { label: "My quotations", href: "/orders" }, { label: "Agency partners", href: "/agency/register" }] },
-  { id: "resources", label: "Resources", items: [{ label: "Home", href: "/" }, { label: "Screen map", href: "/listing?view=map" }, { label: "Staff and vendor sign-in", href: "/login" }] },
+  { id: "services", label: "Media Service's", items: [{ label: "Create a quotation", href: "/quote/new" }, { label: "My quotations", href: "/orders" }, { label: "Agency workspace", href: "/agency" }] },
+  { id: "resources", label: "Resources", items: [{ label: "Become a LOKY Partner", href: "/agency/register" }, { label: "Home", href: "/" }, { label: "Screen map", href: "/listing?view=map" }, { label: "Staff and vendor sign-in", href: "/login" }] },
 ];
 
 function Chevron() {
