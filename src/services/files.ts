@@ -78,11 +78,12 @@ export function blobUrlOf(row: { storageKey: string }): string | null {
   return row.storageKey.startsWith(BLOB) ? row.storageKey.slice(BLOB.length) : null;
 }
 
-export async function readStoredFile(row: FileRow): Promise<Buffer> {
+export async function readStoredFile(row: FileRow, opts: { fresh?: boolean } = {}): Promise<Buffer> {
   const url = blobUrlOf(row);
   if (url) {
     const { get } = await import("@vercel/blob");
-    const res = await get(url, { access: blobAccess(), token: env().BLOB_READ_WRITE_TOKEN });
+    // `fresh` reads from origin storage: a blob uploaded seconds ago may not be on the CDN yet
+    const res = await get(url, { access: blobAccess(), token: env().BLOB_READ_WRITE_TOKEN, ...(opts.fresh ? { useCache: false } : {}) });
     if (!res || res.statusCode !== 200) throw new Error(`Blob not found: ${row.id}`);
     return Buffer.from(await new Response(res.stream).arrayBuffer());
   }

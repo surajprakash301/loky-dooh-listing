@@ -24,7 +24,14 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[id]"
   if (row.storageKey.startsWith("static:")) return NextResponse.redirect(new URL(row.storageKey.slice(7), _req.url));
   // Public blobs are served straight from Vercel's CDN; private ones are proxied below after the auth check.
   const blob = blobUrlOf(row);
-  if (blob && row.publicUrl) return NextResponse.redirect(blob, { status: 302, headers: { "Cache-Control": "public, max-age=31536000, immutable" } });
+  // A blob uploaded moments ago may not have reached the CDN, and a cached redirect to a 404 would leave the
+  // image broken; so new files are streamed from origin for their first minutes, older ones redirect.
+  const fresh = blob && row.publicUrl && Date.now() - new Date(row.createdAt).getTime() < 5 * 60_000;
+  if (fresh) {
+    const data = await readStoredFile(row, { fresh: true });
+    return new NextResponse(new Uint8Array(data), { headers: { "Content-Type": row.mimeType, "Content-Length": String(data.length), "Cache-Control": "public, max-age=60" } });
+  }
+  if (blob && row.publicUrl) return NextResponse.redirect(blob, { status: 302, headers: { "Cache-Control": "public, max-age=3600" } });
   const buf = await readStoredFile(row);
   return new NextResponse(new Uint8Array(buf), {
     headers: {
