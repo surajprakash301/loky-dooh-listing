@@ -7,6 +7,29 @@ const FK = { type: DataTypes.INTEGER, allowNull: false } as const;
 const MONEY = { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 } as const;
 const TS = { createdAt: DataTypes.DATE(3), updatedAt: DataTypes.DATE(3) };
 
+/* ---------- vouchers: admin-made percentage discounts advertisers can apply to a quotation ---------- */
+export class Voucher extends Model<InferAttributes<Voucher>, InferCreationAttributes<Voucher>> {
+  declare id: CreationOptional<number>;
+  declare title: string;
+  /** short line under the title, e.g. "Festive season offer" */
+  declare subtitle: string | null;
+  declare discountPct: number;
+  declare isActive: CreationOptional<boolean>;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+}
+Voucher.init(
+  {
+    id: { ...ID },
+    title: { type: DataTypes.STRING(80), allowNull: false },
+    subtitle: { type: DataTypes.STRING(160), allowNull: true },
+    discountPct: { type: DataTypes.DECIMAL(5, 2), allowNull: false },
+    isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    ...TS,
+  },
+  { sequelize, tableName: "vouchers" },
+);
+
 /* ---------- customer_quotations: a self-serve quote built from the marketplace / map ---------- */
 export class CustomerQuotation extends Model<InferAttributes<CustomerQuotation>, InferCreationAttributes<CustomerQuotation>> {
   declare id: CreationOptional<number>;
@@ -26,6 +49,11 @@ export class CustomerQuotation extends Model<InferAttributes<CustomerQuotation>,
   declare slotSeconds: number;
   declare package: Package;
   declare subtotal: number;
+  /** Voucher applied at quotation time; title and percentage are frozen here so later edits or deletion do not change the quotation. */
+  declare voucherId: ForeignKey<Voucher["id"]> | null;
+  declare voucherTitle: string | null;
+  declare discountPct: CreationOptional<number>;
+  declare discountAmount: CreationOptional<number>;
   declare gstPct: number;
   declare gstAmount: number;
   declare total: number;
@@ -53,6 +81,10 @@ CustomerQuotation.init(
     slotSeconds: { type: DataTypes.SMALLINT, allowNull: false },
     package: { type: DataTypes.STRING(12), allowNull: false },
     subtotal: { ...MONEY },
+    voucherId: { type: DataTypes.INTEGER, allowNull: true },
+    voucherTitle: { type: DataTypes.STRING(80), allowNull: true },
+    discountPct: { type: DataTypes.DECIMAL(5, 2), allowNull: false, defaultValue: 0 },
+    discountAmount: { ...MONEY },
     gstPct: { type: DataTypes.DECIMAL(4, 1), allowNull: false, defaultValue: 18 },
     gstAmount: { ...MONEY },
     total: { ...MONEY },

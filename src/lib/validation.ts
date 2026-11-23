@@ -222,6 +222,7 @@ export const quoteSchema = z.object({
   email: z.string().trim().email("Not a valid email").max(191),
   phone: PHONE,
   company: z.string().trim().max(120).optional(),
+  voucherId: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().int().positive().optional()),
   months: z.coerce.number().int().refine((n) => [1, 3, 6, 12].includes(n), "Pick 1, 3, 6 or 12 months"),
   slotSeconds: z.coerce.number().int().refine((n) => (SLOTS as readonly number[]).includes(n), "Slot must be 10, 20 or 30 s"),
   codes: z.preprocess(
@@ -240,3 +241,9 @@ export const quoteSchema = z.object({
 });
 export type QuoteInput = z.infer<typeof quoteSchema>;
 export const phoneLoginSchema = z.object({ phone: PHONE });
+
+export const voucherSchema = z.object({
+  title: z.string().trim().min(3, "Title is required").max(80),
+  subtitle: z.preprocess((v) => (v === "" ? undefined : v), z.string().trim().max(160).optional()),
+  discountPct: z.coerce.number().gt(0, "Enter a discount above 0%").max(90, "At most 90%"),
+});

@@ -100,6 +100,9 @@ export function QuotationDoc({ q }: { q: CustomerQuotation }) {
           </tbody>
           <tfoot>
             <tr className="bg-page"><td colSpan={5} className="px-[1%] py-[0.8%] text-right font-bold">Subtotal - Outdoor Campaign Net Total</td><td className="px-[1%] py-[0.8%] text-right text-[1.4cqw] font-bold text-green">{inr(q.subtotal)}</td></tr>
+            {Number(q.discountAmount) > 0 && (
+              <tr className="bg-[#fff7e6]" data-testid="doc-discount"><td colSpan={5} className="px-[1%] py-[0.8%] text-right font-bold">Voucher Applied - {q.voucherTitle} ({Number(q.discountPct)}% Off)</td><td className="px-[1%] py-[0.8%] text-right text-[1.3cqw] font-bold text-[#b45309]">- {inr(q.discountAmount)}</td></tr>
+            )}
             <tr className="bg-[#dff0fb]"><td colSpan={5} className="px-[1%] py-[0.8%] text-right font-bold">Total Gov. Tax (Inc. {Number(q.gstPct)}% GST)</td><td className="px-[1%] py-[0.8%] text-right text-[1.3cqw]">{inr(q.gstAmount)}</td></tr>
             <tr className="bg-[#e9f7ef]"><td colSpan={5} className="px-[1%] py-[1%] text-right font-bold">GRAND TOTAL :</td><td className="px-[1%] py-[1%] text-right text-[1.7cqw] font-bold text-green">{inr(q.total)}/-</td></tr>
           </tfoot>
@@ -113,7 +116,7 @@ export function QuotationDoc({ q }: { q: CustomerQuotation }) {
         <table className="mt-[3%] w-full border-collapse text-[1.2cqw]">
           <thead><tr className="bg-[#1f3a5f] text-left text-white"><th className="px-[1%] py-[1%]">City</th><th className="px-[1%] py-[1%] text-center">Digital OOH Count</th><th className="px-[1%] py-[1%] text-center">Estimated Impressions</th><th className="px-[1%] py-[1%] text-right">Net Budget (Rs)</th></tr></thead>
           <tbody>
-            <tr className="border-b border-line"><td className="px-[1%] py-[1.2%] font-bold">{q.city}</td><td className="px-[1%] py-[1.2%] text-center">Total {screens} slot{screens === 1 ? "" : "s"}<br />{items.length} location{items.length === 1 ? "" : "s"} in {q.city}</td><td className="px-[1%] py-[1.2%] text-center">{formatNumber(reach * 7)}+ reach per week</td><td className="px-[1%] py-[1.2%] text-right font-bold text-green">{inr(q.subtotal)}</td></tr>
+            <tr className="border-b border-line"><td className="px-[1%] py-[1.2%] font-bold">{q.city}</td><td className="px-[1%] py-[1.2%] text-center">Total {screens} slot{screens === 1 ? "" : "s"}<br />{items.length} location{items.length === 1 ? "" : "s"} in {q.city}</td><td className="px-[1%] py-[1.2%] text-center">{formatNumber(reach * 7)}+ reach per week</td><td className="px-[1%] py-[1.2%] text-right font-bold text-green">{inr(Number(q.subtotal) - Number(q.discountAmount))}{Number(q.discountAmount) > 0 && <span className="block text-[0.95cqw] font-normal text-ink-soft">after {Number(q.discountPct)}% voucher “{q.voucherTitle}”</span>}</td></tr>
             <tr className="bg-page"><td colSpan={3} className="px-[1%] py-[1.2%] text-right font-bold">Grand Total (Inc. {Number(q.gstPct)}% GST)</td><td className="px-[1%] py-[1.2%] text-right text-[1.8cqw] font-bold text-green">{inr(q.total)}/-</td></tr>
           </tbody>
         </table>

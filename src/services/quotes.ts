@@ -1,5 +1,5 @@
 import { randomBytes, randomInt } from "node:crypto";
-import { Billboard, CustomerQuotation, CustomerQuotationItem, OtpCode, User, sequelize } from "@/db";
+import { Billboard, CustomerQuotation, CustomerQuotationItem, OtpCode, User, Voucher, sequelize } from "@/db";
 import { GST_PCT, QUOTE_VALID_DAYS, packageForMonths, type Package, type QuoteStatus } from "@/lib/domain";
 import { hashPassword, temporaryPassword } from "@/lib/server/password";
 import type { SessionPayload } from "@/lib/session";
@@ -59,10 +59,13 @@ export async function quoteLines(codes: string[], months: number, slotSeconds: n
   });
 }
 
-export function totals(lines: { lineTotal: number }[]) {
+/** Subtotal → voucher discount → GST on the discounted amount → total. Shared by the builder preview and the saved quotation. */
+export function totals(lines: { lineTotal: number }[], discountPct = 0) {
   const subtotal = lines.reduce((n, l) => n + l.lineTotal, 0);
-  const gstAmount = Math.round(subtotal * GST_PCT) / 100;
-  return { subtotal, gstAmount, total: Math.round(subtotal + gstAmount) };
+  const discountAmount = Math.round((subtotal * discountPct) / 100);
+  const taxable = subtotal - discountAmount;
+  const gstAmount = Math.round(taxable * GST_PCT) / 100;
+  return { subtotal, discountAmount, taxable, gstAmount, total: Math.round(taxable + gstAmount) };
 }
 
 const normPhone = (p: string) => p.replace(/\D/g, "").slice(-10);
@@ -110,13 +113,15 @@ async function nextNumber(): Promise<string> {
 
 const LOGO_MAX = 2 * 1024 * 1024;
 
-export async function createQuotation(d: { name: string; email: string; phone: string; company?: string; months: number; slotSeconds: number; codes: string[]; logo?: File | null }, session: SessionPayload | null) {
+export async function createQuotation(d: { name: string; email: string; phone: string; company?: string; months: number; slotSeconds: number; codes: string[]; logo?: File | null; voucherId?: number }, session: SessionPayload | null) {
   if (d.logo && !d.logo.type.startsWith("image/")) throw new QuoteError("The brand logo must be an image (PNG, JPG, SVG or WebP).");
   if (d.logo && d.logo.size > LOGO_MAX) throw new QuoteError("The brand logo must be under 2 MB.");
   const lines = await quoteLines(d.codes, d.months, d.slotSeconds);
   if (!lines.length) throw new QuoteError("None of the selected billboards has rates for that slot length yet.");
+  const voucher = d.voucherId ? await Voucher.findOne({ where: { id: d.voucherId, isActive: true } }) : null;
+  if (d.voucherId && !voucher) throw new QuoteError("That voucher is no longer available. Remove it or pick another one.");
   const { user, created } = await ensureCustomer(d, session);
-  const t = totals(lines);
+  const t = totals(lines, voucher ? Number(voucher.discountPct) : 0);
   const logoFileId = d.logo ? (await storeUpload(d.logo, user.id, { public: true })).id : null;
   const quotation = await sequelize.transaction(async (tx) => {
     let number = await nextNumber();
@@ -136,6 +141,10 @@ export async function createQuotation(d: { name: string; email: string; phone: s
         slotSeconds: d.slotSeconds,
         package: packageForMonths(d.months),
         subtotal: t.subtotal,
+        voucherId: voucher?.id ?? null,
+        voucherTitle: voucher?.title ?? null,
+        discountPct: voucher ? Number(voucher.discountPct) : 0,
+        discountAmount: t.discountAmount,
         gstPct: GST_PCT,
         gstAmount: t.gstAmount,
         total: t.total,
@@ -199,4 +208,12 @@ export async function verifyCustomerOtp(userId: number, code: string): Promise<S
   await otp.update({ consumedAt: new Date() });
   await u.update({ lastLoginAt: new Date() });
   return { uid: u.id, role: "customer", name: u.name };
+}
+
+/* ---------- vouchers ---------- */
+export type VoucherView = { id: number; title: string; subtitle: string | null; discountPct: number };
+
+export async function activeVouchers(): Promise<VoucherView[]> {
+  const rows = await Voucher.findAll({ where: { isActive: true }, order: [["discountPct", "DESC"], ["id", "DESC"]] });
+  return rows.map((v) => ({ id: v.id, title: v.title, subtitle: v.subtitle, discountPct: Number(v.discountPct) }));
 }

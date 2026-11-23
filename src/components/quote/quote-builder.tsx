@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Map as MapIcon, Trash2 } from "lucide-react";
+import { Check, Map as MapIcon, TicketPercent, Trash2 } from "lucide-react";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { createQuotationAction, quoteLinesAction } from "@/actions/quote";
 import { idle } from "@/actions/types";
@@ -10,7 +10,7 @@ import { Field, Notice, SubmitButton, TextInput } from "@/components/portal/form
 import { campaign, useCampaign } from "@/lib/campaign-store";
 import { GST_PCT, QUOTE_MONTHS, SLOT_SECONDS } from "@/lib/domain";
 import { formatINR, formatImpressions } from "@/lib/format";
-import type { QuoteLine } from "@/services/quotes";
+import type { QuoteLine, VoucherView } from "@/services/quotes";
 import { cn } from "@/lib/utils";
 
 /** Optional brand logo with an instant preview; sent with the form and shown beside the company name. */
@@ -55,7 +55,7 @@ type Prefill = { name?: string; email?: string; phone?: string };
 
 const inr = (n: number) => formatINR(n, { space: true });
 
-export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn: boolean }) {
+export function QuoteBuilder({ prefill, signedIn, vouchers = [] }: { prefill: Prefill; signedIn: boolean; vouchers?: VoucherView[] }) {
   const codes = useCampaign();
   const [months, setMonths] = useState<number>(1);
   const [slot, setSlot] = useState<number>(20);
@@ -76,9 +76,12 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
   }, [codes, months, slot]);
 
   const priced = codes.length === 0 ? [] : lines;
+  const [voucherId, setVoucherId] = useState<number | null>(null);
+  const voucher = vouchers.find((v) => v.id === voucherId) ?? null;
   const subtotal = (priced ?? []).reduce((n, l) => n + l.lineTotal, 0);
-  const gst = Math.round(subtotal * GST_PCT) / 100;
-  const total = Math.round(subtotal + gst);
+  const discount = voucher ? Math.round((subtotal * voucher.discountPct) / 100) : 0;
+  const gst = Math.round((subtotal - discount) * GST_PCT) / 100;
+  const total = Math.round(subtotal - discount + gst);
   const missing = codes.filter((c) => priced && !priced.some((l) => l.code === c));
 
   if (codes.length === 0) {
@@ -99,6 +102,7 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
       <input type="hidden" name="codes" value={JSON.stringify(codes)} />
       <input type="hidden" name="months" value={months} />
       <input type="hidden" name="slotSeconds" value={slot} />
+      <input type="hidden" name="voucherId" value={voucherId ?? ""} />
 
       <div className="min-w-0">
         <div className="flex flex-wrap items-end gap-6 rounded-2xl border border-line bg-white p-5">
@@ -165,12 +169,48 @@ export function QuoteBuilder({ prefill, signedIn }: { prefill: Prefill; signedIn
             </tbody>
             <tfoot className="border-t-2 border-line bg-page text-[14px]">
               <tr><td colSpan={5} className="px-4 py-2 text-right font-semibold">Subtotal · Outdoor campaign net total</td><td className="px-2 py-2 text-right font-bold whitespace-nowrap">{inr(subtotal)}</td><td /></tr>
+              {voucher && (
+                <tr className="text-green" data-testid="discount-row">
+                  <td colSpan={5} className="px-4 py-2 text-right font-semibold">Voucher · {voucher.title} ({voucher.discountPct}% off)</td>
+                  <td className="px-2 py-2 text-right font-bold whitespace-nowrap">− {inr(discount)}</td>
+                  <td />
+                </tr>
+              )}
               <tr><td colSpan={5} className="px-4 py-2 text-right">Total Gov. tax (inc. {GST_PCT}% GST)</td><td className="px-2 py-2 text-right whitespace-nowrap">{inr(gst)}</td><td /></tr>
               <tr className="text-[16px]"><td colSpan={5} className="px-4 py-3 text-right font-bold">Grand total</td><td className="px-2 py-3 text-right font-bold whitespace-nowrap text-green" data-testid="grand-total">{inr(total)}</td><td /></tr>
             </tfoot>
           </table>
           {missing.length > 0 && <p className="border-t border-line px-4 py-2 text-[12px] text-coral">{missing.length} selected billboard{missing.length > 1 ? "s have" : " has"} no rate for a {slot}s slot and {missing.length > 1 ? "are" : "is"} left out: {missing.join(", ")}.</p>}
         </div>
+
+        <section className="mt-5 rounded-2xl border border-line bg-white p-5" data-testid="voucher-section">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-[15px] font-bold"><TicketPercent className="size-5 text-green" /> Apply a voucher</h2>
+            {voucher && <button type="button" onClick={() => setVoucherId(null)} className="text-[12.5px] font-semibold text-ink-soft hover:text-ink hover:underline">Remove voucher</button>}
+          </div>
+          {vouchers.length === 0 ? (
+            <p className="mt-2 text-[13px] text-ink-soft">No vouchers are running right now.</p>
+          ) : (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {vouchers.map((v) => {
+                const on = v.id === voucherId;
+                return (
+                  <button key={v.id} type="button" aria-pressed={on} onClick={() => setVoucherId(on ? null : v.id)} data-testid={`voucher-${v.id}`} className={cn("flex items-center gap-3 rounded-xl border border-dashed px-3.5 py-3 text-left", on ? "border-green bg-green/10" : "border-ink/25 bg-page hover:border-green")}>
+                    <span className={cn("grid size-11 shrink-0 place-items-center rounded-lg text-[13px] leading-none font-black", on ? "bg-green text-white" : "bg-white text-green ring-1 ring-green/40")}>{v.discountPct}%</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] font-bold">{v.title}</span>
+                      <span className="block truncate text-[12px] text-ink-soft">{v.subtitle ?? `${v.discountPct}% off this quotation`}</span>
+                    </span>
+                    <span className={cn("inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-3 text-[12px] font-bold whitespace-nowrap", on ? "bg-green text-white" : "border border-ink/25 bg-white text-ink")}>
+                      {on ? <><Check className="size-3.5" strokeWidth={3} /> Applied</> : "Apply"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {voucher && <p className="mt-3 text-[13px] font-semibold text-green" data-testid="voucher-saving">You save {inr(discount)} with “{voucher.title}”.</p>}
+        </section>
       </div>
 
       <aside className="h-fit rounded-2xl border border-line bg-white p-6 lg:sticky lg:top-6">

@@ -19,6 +19,25 @@ page.setDefaultTimeout(30000);
 const phone = "9" + String(Math.floor(Math.random() * 1e9)).padStart(9, "0");
 const email = `tester+${phone}@example.com`;
 
+/* ---------- 0. admin creates a voucher ---------- */
+const vTitle = `E2E Offer ${phone.slice(-5)}`;
+async function adminLogin() {
+  await ctx.clearCookies();
+  await page.goto(`${BASE}/login`);
+  await page.fill('input[name="username"]', "admin"); await page.fill('input[name="password"]', "Admin@12345");
+  await Promise.all([page.waitForURL((u) => !u.pathname.startsWith("/login")), page.click('button[type="submit"]')]);
+  await page.goto(`${BASE}/admin/vouchers`);
+}
+await adminLogin();
+await page.click('[data-testid="voucher-form"] button[type="submit"]');
+await page.waitForSelector("text=Title is required");
+ok("admin: empty voucher is rejected", true);
+await page.fill('input[name="title"]', vTitle); await page.fill('input[name="subtitle"]', "Automated test voucher"); await page.fill('input[name="discountPct"]', "10");
+await page.click('[data-testid="voucher-form"] button[type="submit"]');
+await page.waitForSelector(`tr:has-text("${vTitle}")`);
+ok("admin: voucher created and listed as active", (await page.locator(`tr:has-text("${vTitle}")`).textContent()).includes("Active"));
+await ctx.clearCookies();
+
 /* ---------- 1. map view ---------- */
 await page.goto(`${BASE}/listing?view=map`);
 await page.waitForSelector(".leaflet-container .leaflet-tile-loaded", { timeout: 45000 });
@@ -72,6 +91,19 @@ const total3 = await page.locator('[data-testid="grand-total"]').textContent();
 ok(`3 months costs more than 1 month (${total1.trim()} → ${total3.trim()})`, total3 !== total1);
 await page.click('[data-testid="months-1"]');
 await page.waitForFunction((t) => document.querySelector('[data-testid="grand-total"]')?.textContent === t, total1);
+// voucher: listed, applies 10%, can be removed and re-applied
+const num = (t) => Number(t.replace(/[^0-9]/g, ""));
+const vCard = page.locator(`[data-testid="voucher-section"] button:has-text("${vTitle}")`);
+ok("builder lists the admin's active voucher", (await vCard.count()) === 1);
+await vCard.click();
+await page.waitForSelector('[data-testid="discount-row"]');
+const totalV = await page.locator('[data-testid="grand-total"]').textContent();
+ok(`voucher lowers the grand total by about 10% (${total1.trim()} → ${totalV.trim()})`, Math.abs(num(totalV) - num(total1) * 0.9) <= 2, `${num(total1)} vs ${num(totalV)}`);
+ok("discount row names the voucher", (await page.locator('[data-testid="discount-row"]').textContent()).includes(vTitle));
+await page.click("text=Remove voucher");
+ok("removing the voucher restores the total", (await page.locator('[data-testid="grand-total"]').textContent()) === total1);
+await vCard.click();
+await page.waitForSelector('[data-testid="discount-row"]');
 await page.screenshot({ path: `${SHOTS}/quote-builder.png`, fullPage: true });
 
 // validation keeps values
@@ -108,6 +140,7 @@ ok(`quotation document has cover, rates, summary, divider, 3 locations and thank
 const docText = await page.locator('[data-testid="quotation-doc"]').textContent();
 const logoLoaded = await page.locator('[data-testid="quote-logo"] img').evaluate((i) => (i.complete && i.naturalWidth > 0) || new Promise((res) => { i.onload = () => res(true); i.onerror = () => res(false); setTimeout(() => res(false), 15000); })).catch(() => false);
 ok("cover shows the brand logo beside the company name", logoLoaded === true);
+ok("document shows the voucher and discount", (await page.locator('[data-testid="doc-discount"]').textContent()).includes(vTitle) && docText.includes("10% Off"));
 ok("document names the client company", docText.includes("Eyverse OOH Agency"));
 ok("document carries GST line and grand total", docText.includes("18% GST") && docText.includes("GRAND TOTAL"));
 ok("header shows the advertiser's name", (await page.locator("header").textContent()).includes("Abhinav"));
@@ -130,7 +163,13 @@ ok("advertiser cannot open admin", !page.url().includes("/admin"), page.url());
 /* ---------- 6. second quotation while signed in skips OTP ---------- */
 await page.goto(`${BASE}/listing?view=map`);
 await page.waitForSelector('[data-testid="site-00016"]');
-await page.locator('[data-testid="site-00016"] [data-testid="add-00016"]').click();
+await page.waitForSelector(".loky-pin, .loky-cluster"); // map is interactive
+for (let i = 0; i < 5; i++) {
+  const btn = page.locator('[data-testid="site-00016"] [data-testid="add-00016"]');
+  if ((await btn.getAttribute("aria-pressed")) === "true") break;
+  await btn.click();
+  await page.waitForTimeout(400);
+}
 await page.goto(`${BASE}/quote/new`);
 await page.waitForSelector('[data-testid="line-00016"]');
 ok("signed-in builder prefills the mobile number", (await page.inputValue('input[name="phone"]')) === phone);
@@ -156,6 +195,21 @@ const code2 = (await page.locator('[data-testid="dev-code"]').textContent()).tri
 await page.fill('[data-testid="login-dialog"] input[name="code"]', code2);
 await Promise.all([page.waitForURL("**/orders"), page.click('[data-testid="login-dialog"] button:has-text("Verify")')]);
 ok("returning advertiser signs in from the home page and lands on Orders", page.url().endsWith("/orders"));
+
+/* ---------- 8. admin deactivates, then deletes the voucher ---------- */
+await adminLogin();
+const row = page.locator(`tr:has-text("${vTitle}")`);
+ok("admin sees the voucher was used once", (await row.textContent()).includes("1 quotation"));
+await row.locator('button:has-text("Mark inactive")').click();
+await page.waitForSelector(`tr:has-text("${vTitle}") button:has-text("Mark active")`);
+ok("admin marked the voucher inactive", (await page.locator(`tr:has-text("${vTitle}")`).textContent()).includes("Inactive"));
+await page.goto(`${BASE}/quote/new`);
+await page.waitForSelector('[data-testid="voucher-section"]');
+ok("inactive voucher is hidden from the builder", (await page.locator(`[data-testid="voucher-section"] button:has-text("${vTitle}")`).count()) === 0);
+await page.goto(`${BASE}/admin/vouchers`);
+await page.locator(`tr:has-text("${vTitle}")`).locator('button:has-text("Delete")').click();
+await page.locator(`tr:has-text("${vTitle}")`).waitFor({ state: "detached" });
+ok("admin deleted the voucher", true);
 
 await browser.close();
 console.log(`\n${pass}/${pass + fail} checks passed`);

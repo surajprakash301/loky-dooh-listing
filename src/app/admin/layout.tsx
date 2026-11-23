@@ -12,7 +12,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       nav={[
         { href: "/admin/vendors", label: "Vendor onboarding", sub: "Pending · Approved · Rejected", icon: "review" },
         { href: "/admin/agencies", label: "Agencies", sub: "Partners & commissions", icon: "users" },
-        { href: "/admin/coupons", label: "Coupons", sub: "Promo codes", icon: "list" },
+        { href: "/admin/vouchers", label: "Vouchers", sub: "Quotation discounts", icon: "list" },
+        { href: "/admin/coupons", label: "Coupons", sub: "Agency promo codes", icon: "list" },
         { href: "/admin/staff", label: "Staff accounts", sub: "Admins & representatives", icon: "users" },
       ]}
     >

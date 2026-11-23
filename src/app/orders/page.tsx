@@ -31,6 +31,7 @@ export default async function ActiveQuotationsPage() {
             <p className="mt-3 text-[18px] font-bold">{q.company ?? q.clientName}</p>
             <p className="mt-0.5 text-[13px] text-ink-soft">{q.items?.length ?? 0} location{(q.items?.length ?? 0) === 1 ? "" : "s"} in {q.city} · {q.months} month{q.months > 1 ? "s" : ""} · {q.slotSeconds}s slot</p>
             <p className="mt-3 text-[22px] font-bold">{formatINR(Number(q.total))} <span className="text-[12px] font-normal text-ink-soft">incl. GST</span></p>
+            {Number(q.discountAmount) > 0 && <p className="mt-1 text-[12px] font-semibold text-green">Voucher “{q.voucherTitle}” · {Number(q.discountPct)}% off · saved {formatINR(Number(q.discountAmount))}</p>}
             <p className="mt-1 text-[12px] text-ink-soft">Created {formatDateLong(q.createdAt)} · valid until {formatDateLong(q.validUntil)}</p>
           </Link>
         ))}
