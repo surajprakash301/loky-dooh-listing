@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { ListingView, type ViewMode } from "@/components/listing/listing-view";
-import { CategoryTabs } from "@/components/site/category-tabs";
-import { LocalityChips } from "@/components/site/locality-chips";
+import { CategoryNav, SearchFilters } from "@/components/ref/listing-chrome";
 import { CampaignBar } from "@/components/campaign/campaign-bar";
 import { SiteHeader } from "@/components/site/site-header";
 import { listPublicBillboards, localityCounts, toCard } from "@/services/catalog";
@@ -18,7 +17,7 @@ export default async function ListingPage(props: PageProps<"/listing">) {
   const [rows, localities] = await Promise.all([listPublicBillboards(filters), localityCounts()]);
   const items = rows.map(toCard);
   const where = filters.locality ?? filters.city ?? (rows[0] ? `${rows[0].city}, ${rows[0].state}` : "India");
-  const heading = `All DOOH Billboards In ${where}`;
+  const heading = `All DOOH Billboards In ${where.replace(",", " ,")}`;
 
   return (
     <>
@@ -26,16 +25,14 @@ export default async function ListingPage(props: PageProps<"/listing">) {
       <CampaignBar />
 
       {view !== "map" && (
-        <div className="border-b border-line bg-white">
-          <div className="mx-auto flex max-w-[1512px] flex-col gap-1 px-8 pt-2">
-            <LocalityChips items={localities} active={filters.locality} />
-            <CategoryTabs active={filters.category ?? "all"} view={view} />
-          </div>
-        </div>
+        <Suspense>
+          <SearchFilters localities={localities} selected={filters.locality} />
+          <CategoryNav active={filters.category ?? "all"} view={view} />
+        </Suspense>
       )}
 
       <Suspense>
-        <ListingView items={items} initialView={view} heading={heading} crumb={`${items.length} billboard${items.length === 1 ? "" : "s"}${filters.locality ? ` in ${filters.locality}` : ""}`} />
+        <ListingView items={items} initialView={view} heading={heading} crumb={filters.locality ? `${filters.locality}, Patna` : where} />
       </Suspense>
     </>
   );

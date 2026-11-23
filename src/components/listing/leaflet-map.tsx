@@ -29,23 +29,26 @@ type Props = {
   focus: string | null;
   /** false for a small embedded map with nothing floating over it */
   floatingPanel?: boolean;
+  /** dashed corridor circles behind the pins (big map only) */
+  corridors?: { lat: number; lng: number; radius: number; tint: string }[];
 };
 
 type PointProps = { code: string; name: string; locality: string; reach: number; screens: number };
 
-function pinIcon(state: "default" | "selected" | "active", screens: number) {
-  const fill = state === "active" ? "#121212" : state === "selected" ? "#10ad5d" : "#e5342b";
+function pinIcon(state: "default" | "selected" | "active", screens: number, green = false) {
+  const fill = green ? "#10ad5d" : state === "active" ? "#121212" : state === "selected" ? "#10ad5d" : "#e5342b";
+  if (green) screens = 1;
   const inner = screens > 1
     ? `<circle cx="15" cy="14.5" r="8" fill="#fff"/><text x="15" y="18.6" text-anchor="middle" font-size="${screens > 9 ? 9.5 : 11}" font-weight="900" font-family="system-ui,sans-serif" fill="${fill}">${screens}</text>`
-    : `<circle cx="15" cy="14.5" r="4.8" fill="#fff"/>`;
+    : `<circle cx="15" cy="14.5" r="4.8" fill="#fff"/>${green && state === "selected" ? '<circle cx="15" cy="14.5" r="8.4" fill="none" stroke="#fff" stroke-width="2"/>' : ""}`;
   const svg = `<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 39C15 39 28 24.5 28 14.5A13 13 0 0 0 2 14.5C2 24.5 15 39 15 39Z" fill="${fill}" stroke="#fff" stroke-width="1.5"/>${inner}</svg>`;
   return L.divIcon({ html: svg, className: "loky-pin", iconSize: [30, 40], iconAnchor: [15, 39] });
 }
 
-function clusterIcon(screens: number, names: string[]) {
-  const size = 44;
+function clusterIcon(screens: number, names: string[], green = false) {
+  const size = green ? 36 : 44;
   return L.divIcon({
-    html: `<div class="loky-cluster" style="width:${size}px;height:${size}px"><b>${screens}</b><span>${names.length} site${names.length === 1 ? "" : "s"}</span></div>`,
+    html: `<div class="loky-cluster${green ? " lk-green" : ""}" style="width:${size}px;height:${size}px"><b>${green ? names.length : screens}</b><span>${names.length} site${names.length === 1 ? "" : "s"}</span></div>`,
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -56,12 +59,14 @@ function clusterIcon(screens: number, names: string[]) {
 const insetFor = (floating: boolean) => (width: number): [number, number] => (floating ? [width >= 1024 ? 396 : 0, 76] : [0, 0]);
 
 /** Thin imperative wrapper around Leaflet + supercluster. Everything else (panel, cards) is React. */
-export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey, focus, floatingPanel = true }: Props) {
+export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey, focus, floatingPanel = true, corridors }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
   const index = useRef<Supercluster<PointProps> | null>(null);
   const inset = insetFor(floatingPanel);
+  const floatingPanelRef = useRef(floatingPanel);
+  const corridorLayer = useRef<L.LayerGroup | null>(null);
   const latest = useRef({ selected, active, onActive, onBounds });
   useEffect(() => {
     latest.current = { selected, active, onActive, onBounds };
@@ -83,7 +88,7 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
         const id = props.cluster_id;
         const leaves = idx.getLeaves(id, 50);
         const names = leaves.map((l) => l.properties.name);
-        const mk = L.marker([lat, lng], { icon: clusterIcon(leaves.reduce((n, l) => n + l.properties.screens, 0), names) });
+        const mk = L.marker([lat, lng], { icon: clusterIcon(leaves.reduce((n, l) => n + l.properties.screens, 0), names, !floatingPanelRef.current) });
         mk.bindTooltip(
           `<div class="loky-tip"><b>${names.length} sites · ${leaves.reduce((n, l) => n + l.properties.screens, 0)} screens</b><ul>${names.slice(0, 6).map((n) => `<li>${n}</li>`).join("")}${names.length > 6 ? `<li>+${names.length - 6} more</li>` : ""}</ul><i>Click to zoom in</i></div>`,
           { direction: "top", offset: [0, -24], opacity: 1 },
@@ -93,7 +98,7 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
       } else {
         const p = c.properties as PointProps;
         const state = latest.current.active === p.code ? "active" : latest.current.selected.includes(p.code) ? "selected" : "default";
-        const mk = L.marker([lat, lng], { icon: pinIcon(state, p.screens), zIndexOffset: state === "active" ? 1000 : 0 });
+        const mk = L.marker([lat, lng], { icon: pinIcon(state, p.screens, !floatingPanelRef.current), zIndexOffset: state === "active" ? 1000 : 0 });
         mk.bindTooltip(`<div class="loky-tip"><b>${p.name}</b><span>${p.locality}</span></div>`, { direction: "top", offset: [0, -36], opacity: 1 });
         mk.on("click", () => latest.current.onActive(p.code));
         mk.addTo(g);
@@ -105,7 +110,8 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = L.map(el.current, { zoomControl: false, attributionControl: true, scrollWheelZoom: true });
-    L.control.zoom({ position: "bottomright" }).addTo(m);
+    L.control.zoom({ position: floatingPanel ? "bottomright" : "topright" }).addTo(m);
+    corridorLayer.current = L.layerGroup().addTo(m);
     if (floatingPanel) L.control.scale({ position: "bottomright", imperial: false }).addTo(m);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -157,6 +163,14 @@ export function LeafletMap({ sites, selected, active, onActive, onBounds, fitKey
   useEffect(() => {
     draw();
   }, [selected, active, draw]);
+
+  // corridor circles
+  useEffect(() => {
+    const g = corridorLayer.current;
+    if (!g) return;
+    g.clearLayers();
+    for (const c of corridors ?? []) L.circle([c.lat, c.lng], { radius: c.radius, color: "#475467", weight: 1, dashArray: "5 5", fillColor: c.tint, fillOpacity: 0.16, interactive: false }).addTo(g);
+  }, [corridors]);
 
   // fit to every site
   useEffect(() => {

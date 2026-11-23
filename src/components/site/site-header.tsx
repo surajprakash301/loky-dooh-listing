@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { Bell, ChevronDown, Grip } from "lucide-react";
 import { AdvertiserLogin } from "@/components/auth/advertiser-login";
+import { pageFrame } from "@/components/ref/page-frame";
+import { SiteNav } from "@/components/ref/site-nav";
 import { logoutAction } from "@/actions/auth";
 import { Logo } from "@/components/site/logo";
 import { getSession } from "@/lib/server/auth";
@@ -40,6 +42,48 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
   const session = await getSession();
   const pendingCode = session ? null : ((await cookies()).get("loky_otp_uid")?.value ? ((await cookies()).get("loky_dev_otp")?.value ?? "") : null);
   const initials = session ? session.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() : "SP";
+  if (!home) {
+    const pill = "flex h-10 shrink-0 items-center rounded-full border border-[#e7e7e7] px-4 font-[family-name:var(--font-manrope)] text-[14px] font-semibold leading-none whitespace-nowrap text-[#212121] transition-colors hover:bg-[#f8f8f8] sm:text-[15px]";
+    return (
+      <header data-site-header className={cn("sticky top-0 z-[900] h-[72px] w-full border-b border-[#e7e7e7] bg-white text-[#212121]", className)}>
+        <div className={`${pageFrame} relative flex h-full items-center justify-between gap-4`}>
+          <Link href="/" className="relative block h-[34px] w-[87px] shrink-0" aria-label="LOKY MEDIA">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/logo/loky-logo.png" alt="LOKY MEDIA" width={87} height={34} className="h-[34px] w-[87px]" />
+          </Link>
+          <div className="hidden min-w-0 flex-1 justify-center md:flex">
+            <Suspense><SiteNav /></Suspense>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <Link href="/agency/register" className="btn-loky-cta hidden h-10 items-center rounded-full px-4 font-[family-name:var(--font-manrope)] text-[14px] font-semibold whitespace-nowrap lg:flex">
+              Become a LOKY Partner
+            </Link>
+            {session ? (
+              <>
+                <Link href={session.role === "customer" ? "/orders" : homeFor(session.role)} className={pill} data-testid="orders-link">
+                  {session.role === "customer" ? "My campaigns" : "My portal"}
+                </Link>
+                <Link href={session.role === "customer" ? "/orders" : homeFor(session.role)} title={session.name} className="flex items-center gap-2">
+                  <span className="grid size-9 place-items-center rounded-full border border-lk bg-lk/10 text-[12px] font-bold text-lk">{initials}</span>
+                  <span className="hidden text-[14px] font-semibold xl:inline">{session.name.split(" ")[0]}</span>
+                </Link>
+                <form action={logoutAction}>
+                  <button type="submit" className="text-[13px] font-semibold whitespace-nowrap text-[#667085] hover:text-[#212121]">Sign out</button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/orders" className={pill}>My campaigns</Link>
+                <Suspense fallback={<span className="block size-9 rounded-full border border-lk" />}>
+                  <AdvertiserLogin pendingCode={pendingCode} variant="icon" />
+                </Suspense>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+    );
+  }
   return (
     <header
       className={cn(
@@ -53,7 +97,7 @@ export async function SiteHeader({ variant = "listing", className }: { variant?:
         <nav
           className={cn(
             "hidden items-center md:flex",
-            variant === "listing" ? "gap-7 text-[14px] font-medium" : "gap-7 text-[15px] font-medium",
+            "gap-7 text-[15px] font-medium",
           )}
         >
           {NAV[variant].map((item) => (

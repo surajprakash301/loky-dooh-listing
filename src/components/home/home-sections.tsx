@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight, ChevronRight, Map as MapIcon, Play } from "lucide-react";
 import { useState } from "react";
 import { BillboardCardHorizontal } from "@/components/listing/billboard-card";
-import { TierChips } from "@/components/listing/listing-view";
+import { TierChips } from "@/components/home/tier-chips";
 import { CategoryIcon } from "@/components/site/category-icon";
 import { Logo } from "@/components/site/logo";
 import { type Billboard, lumeNetwork, steps } from "@/lib/data";

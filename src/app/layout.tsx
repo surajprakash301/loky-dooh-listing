@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Inter, Lato, Poppins, Urbanist } from "next/font/google";
+import { Anton, Inter, Lato, Manrope, Montserrat, Poppins, Urbanist } from "next/font/google";
 import "./globals.css";
 
 const lato = Lato({
@@ -30,6 +30,9 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
+
 export const metadata: Metadata = {
   title: "Loky Media — India's Digital Billboard Marketplace",
   description:
@@ -40,7 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${lato.variable} ${urbanist.variable} ${anton.variable} ${poppins.variable} ${inter.variable} h-full antialiased`}
+      className={`${lato.variable} ${urbanist.variable} ${anton.variable} ${poppins.variable} ${montserrat.variable} ${manrope.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-page text-ink font-sans">
         {children}

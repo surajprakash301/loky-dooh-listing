@@ -5,6 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* reference-platform accent (listing + map screens) */
+  --color-lk: #10ad5d;
+  --color-lk-hover: #0d8e4c;
+  --font-montserrat: var(--font-montserrat);
+  --font-manrope: var(--font-manrope);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-lato);
@@ -305,3 +310,13 @@ body.has-campaign-bar { padding-bottom: 92px; }
 .leaflet-bar a { width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 18px !important; color: #0f0f0f !important; }
 .leaflet-bar a:hover { background: #f3f3f3 !important; }
 .leaflet-control-attribution { font-size: 10px !important; background: rgba(255, 255, 255, 0.8) !important; }
+
+/* ---------- listing + map screens, ported from the reference platform ---------- */
+.btn-loky-cta { background-color: #10ad5d; color: #fff; transition: background-color 150ms; }
+.btn-loky-cta:not(:disabled):hover { background-color: #0d8e4c; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.cat-active-glow { background-image: linear-gradient(180deg, rgba(16, 173, 93, 0) 0%, rgba(16, 173, 93, 0.16) 100%); }
+body.has-campaign-bar { padding-bottom: 150px; }
+.loky-cluster.lk-green { background: #10ad5d; border-width: 2px; }
+.loky-cluster.lk-green span { display: none; }

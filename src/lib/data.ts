@@ -32,6 +32,8 @@ export type Billboard = {
   perMonth?: number | null;
   perMonthList?: number | null;
   reach?: number;
+  landmark?: string | null;
+  categorySlug?: string;
 };
 
 export { TIER_LABEL } from "@/lib/domain";

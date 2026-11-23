@@ -1,9 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Expand } from "lucide-react";
 import { useMemo } from "react";
 import type { MapSite } from "@/components/listing/leaflet-map";
 import { screenCount } from "@/components/listing/map-explorer";
@@ -26,11 +24,8 @@ export function SideMap({ items, className }: { items: Billboard[]; className?: 
   );
   if (sites.length === 0) return null;
   return (
-    <div className={cn("relative isolate overflow-hidden rounded-2xl border border-line bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]", className)} data-testid="side-map">
+    <div className={cn("relative isolate overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white", className)} data-testid="side-map">
       <LeafletMap sites={sites} selected={selected} active={null} onActive={(code) => code && router.push(`/billboard/${code}`)} onBounds={() => {}} fitKey={sites.length} focus={null} floatingPanel={false} />
-      <Link href="/listing?view=map" className="absolute top-3 right-3 z-[500] inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-white px-3 text-[12px] font-bold whitespace-nowrap shadow-[0_4px_12px_rgba(16,24,40,0.12)] hover:border-ink/40">
-        <Expand className="size-3.5" /> Open full map
-      </Link>
     </div>
   );
 }

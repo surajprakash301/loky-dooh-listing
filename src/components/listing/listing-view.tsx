@@ -1,142 +1,93 @@
 "use client";
 
-import { LayoutGrid, List, Map as MapIcon } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { BillboardCardHorizontal, BillboardCardVertical } from "@/components/listing/billboard-card";
 import { MapExplorer } from "@/components/listing/map-explorer";
 import { SideMap } from "@/components/listing/side-map";
-import { Breadcrumb } from "@/components/site/breadcrumb";
-import { type Billboard, tierFilters } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { ListingCard } from "@/components/ref/listing-card";
+import { pageFrame } from "@/components/ref/page-frame";
+import type { Billboard } from "@/lib/data";
 
 export type ViewMode = "list" | "grid" | "map";
 
-const VIEWS: { id: ViewMode; label: string; icon: typeof List }[] = [
-  { id: "list", label: "List", icon: List },
-  { id: "grid", label: "Grid", icon: LayoutGrid },
-  { id: "map", label: "Map", icon: MapIcon },
+const PARTNERS = [
+  { id: "all", label: "ALL" },
+  { id: "exclusive", label: "Loky Exclusive ✨" },
+  { id: "partner", label: "Loky Partner" },
+  { id: "operated", label: "Loky Operated" },
+];
+const VIEWS: { id: ViewMode; label: string; icon: string }[] = [
+  { id: "list", label: "List", icon: "view-list" },
+  { id: "grid", label: "Grid", icon: "view-grid" },
+  { id: "map", label: "Map", icon: "view-map" },
 ];
 
-export function TierChips({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-2.5">
-      {tierFilters.map((t) => {
-        const active = t.id === value;
-        return (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => onChange(t.id)}
-            className={cn(
-              "h-8 rounded-full border px-4 text-[13px] whitespace-nowrap transition-colors",
-              active
-                ? "border-line bg-[#f3f3f3] font-bold text-green shadow-[0_1px_3px_rgba(0,0,0,0.12)]"
-                : "border-line bg-white text-ink-soft hover:border-ink/30",
-            )}
-          >
-            {t.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function ViewToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
-  return (
-    <div className="flex overflow-hidden rounded-md border border-line bg-white text-[14px]">
-      {VIEWS.map((v, i) => {
-        const active = v.id === value;
-        return (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => onChange(v.id)}
-            className={cn(
-              "flex h-9 items-center gap-2 px-4",
-              i > 0 && "border-l border-line",
-              active ? "bg-[#f1f1f1] text-green" : "text-ink hover:bg-page",
-            )}
-          >
-            <v.icon className="size-4" />
-            {v.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
+/** Listing results in the reference platform's layout: breadcrumb, title, partner pills, view switch, cards + side map. */
 export function ListingView({ items, initialView, heading, crumb }: { items: Billboard[]; initialView: ViewMode; heading: string; crumb: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  // The view lives in the URL (?view=list|grid|map) so the header's "Map" link, the toggle, back/forward
-  // and a refresh all agree; local state would freeze the first render's view on client navigations.
+  // The view lives in the URL so the header's Map link, the switch, back/forward and refresh all agree.
   const raw = params.get("view");
   const view: ViewMode = raw === "grid" || raw === "map" ? raw : raw === "list" ? "list" : initialView;
-  const [tier, setTier] = useState<string>("all");
-
-  const changeView = (v: ViewMode) => {
+  const [partner, setPartner] = useState("all");
+  const hrefFor = (v: ViewMode) => {
     const next = new URLSearchParams(params.toString());
-    next.set("view", v);
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    if (v === "list") next.delete("view");
+    else next.set("view", v);
+    const s = next.toString();
+    return s ? `${pathname}?${s}` : pathname;
   };
 
-  const filtered = tier === "all" ? items : items.filter((b) => b.tier === tier);
-
   if (view === "map") return <MapExplorer items={items} />;
+  const visible = partner === "all" ? items : items.filter((b) => b.tier === partner);
 
   return (
-    <div className="mx-auto max-w-[1512px] px-8 pt-4 pb-16">
-
-      <div className="min-w-0 flex-1">
-        <Breadcrumb
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Digital OOH", href: "/listing" },
-            { label: crumb },
-          ]}
-        />
-        <h1 className="mt-2 text-[22px] font-medium">{heading}</h1>
-
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <TierChips value={tier} onChange={setTier} />
-          <ViewToggle value={view} onChange={changeView} />
-        </div>
-
-        <div className="mt-5">
-          {filtered.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-line bg-white p-12 text-center text-muted-ink">
-              No billboards match these filters yet.
-            </div>
-          )}
-          {view === "grid" ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {filtered.map((b, i) => (
-                <BillboardCardVertical key={`${b.id}-${i}`} b={b} compare={i >= 3 && b.tier === "partner"} />
+    <main className={`${pageFrame} pt-2.5 pb-8`}>
+      <div className="flex w-full flex-col gap-[11px]">
+        <p className="truncate text-[12px] leading-[1.2] font-medium text-[rgba(74,85,101,0.6)]">
+          <Link href="/" className="hover:text-[#4a5565]">Home</Link>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&gt;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <Link href="/listing" className="hover:text-[#4a5565]">Digital OOH</Link>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&gt;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <span className="text-[#4a5565]">{crumb}</span>
+        </p>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-3">
+            <h1 className="text-[22px] leading-[1.2] font-semibold text-[#212121] md:text-[24px]">{heading}</h1>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {PARTNERS.map((f) => (
+                <button key={f.id} type="button" onClick={() => setPartner(f.id)} className={partner === f.id ? "rounded-full border border-t-[0.5px] border-b-[3px] border-[#e0e0e0] bg-lk/10 px-5 py-2 text-[13px] leading-none font-bold whitespace-nowrap text-lk" : "rounded-full border border-[#e0e0e0] bg-white px-5 py-2 text-[13px] leading-none whitespace-nowrap text-[#3d3d3d] transition-colors hover:border-[#bdbdbd]"}>
+                  {f.label}
+                </button>
               ))}
             </div>
-          ) : (
-            <div className="flex flex-col items-stretch gap-6 min-[1440px]:flex-row min-[1440px]:items-start">
-              <div className="flex min-w-0 flex-1 flex-col gap-5">
-                {filtered.map((b, i) => (
-                  <BillboardCardHorizontal key={`${b.id}-${i}`} b={b} />
-                ))}
-              </div>
-              {filtered.length > 0 && <SideMap items={filtered} className="hidden h-[min(560px,calc(100vh-2rem))] w-[380px] shrink-0 min-[1440px]:sticky min-[1440px]:top-4 min-[1440px]:block min-[1680px]:w-[420px]" />}
-            </div>
-          )}
-
+          </div>
+          <div className="flex h-10 w-full max-w-[270px] overflow-hidden rounded-lg border border-[#e0e0e0] bg-white lg:ml-auto">
+            {VIEWS.map((v, i) => (
+              <button key={v.id} type="button" onClick={() => router.replace(hrefFor(v.id), { scroll: false })} className={`flex h-full w-1/3 items-center justify-center gap-1.5 text-[14px] ${i > 0 ? "border-l border-[#e0e0e0]" : ""} ${view === v.id ? "border-b-[3px] border-b-lk bg-lk/10 font-semibold text-lk" : "text-[#212121] hover:bg-[#f8f9fb]"}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/assets/icons/${v.icon}.svg`} alt="" width={10} height={10} />
+                {v.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      <div className="mt-5 flex flex-col items-stretch gap-5 xl:flex-row xl:items-start xl:gap-6">
+        <section className={view === "grid" ? "grid w-full min-w-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2 [&>*]:@container" : "@container flex w-full min-w-0 flex-1 flex-col gap-4"}>
+          {visible.length === 0 ? (
+            <p className="col-span-full rounded-2xl border border-[#e0e0e0] bg-white px-5 py-10 text-center text-[14px] text-[#64748b]">No screens match these filters. Reset to see every Patna location.</p>
+          ) : view === "grid" ? (
+            visible.map((b) => <div key={b.id}><ListingCard b={b} /></div>)
+          ) : (
+            visible.map((b) => <ListingCard key={b.id} b={b} />)
+          )}
+        </section>
+        {visible.length > 0 && <SideMap items={visible} className="h-[300px] w-full shrink-0 xl:sticky xl:top-[88px] xl:h-[min(540px,calc(100vh-7rem))] xl:w-[380px] 2xl:w-[420px]" />}
+      </div>
+    </main>
   );
 }

@@ -19,7 +19,7 @@ type Props = {
   /** react to `?login=1` in the URL (only the header instance should, so one popup opens, not two) */
   autoOpen?: boolean;
   /** trigger look: header text link or a solid button */
-  variant?: "link" | "button";
+  variant?: "link" | "button" | "icon";
 };
 
 /**
@@ -60,7 +60,15 @@ export function AdvertiserLogin({ pendingCode, light = false, triggerless = fals
 
   return (
     <>
-      {!triggerless && (
+      {!triggerless && variant === "icon" && (
+        <button type="button" onClick={() => setOpen(true)} aria-label="Sign in" title="Sign in" className="grid size-9 shrink-0 place-items-center rounded-full border border-lk text-lk hover:bg-lk/10" data-testid="open-login">
+          <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="3.6" />
+            <path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4" />
+          </svg>
+        </button>
+      )}
+      {!triggerless && variant !== "icon" && (
         <button type="button" onClick={() => setOpen(true)} className={cn(variant === "button" ? "btn-3d inline-flex h-10 items-center rounded-lg bg-green px-5 text-[14px] font-semibold text-white" : cn("text-[17px] font-medium", light && "text-[15px]"))} data-testid={variant === "button" ? "open-login-inline" : "open-login"}>
           {variant === "button" ? "Sign in with mobile" : "login/ signup"}
         </button>

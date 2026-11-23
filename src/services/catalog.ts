@@ -28,7 +28,8 @@ export async function listPublicBillboards(f: ListingFilters = {}): Promise<Bill
   return Billboard.findAll({
     where,
     include,
-    order: [["updatedAt", "DESC"], [{ model: BillboardMedia, as: "media" }, "sortOrder", "ASC"]],
+    // catalogue order (the order sites were published in), as on the reference listing
+    order: [["id", "ASC"], [{ model: BillboardMedia, as: "media" }, "sortOrder", "ASC"]],
   });
 }
 
@@ -111,6 +112,8 @@ export function toCard(b: Billboard): CardBillboard {
     perMonth: bestRate(b, "month")?.offer ?? null,
     perMonthList: bestRate(b, "month")?.list ?? null,
     reach: b.dailyImpressions,
+    landmark: b.landmark,
+    categorySlug: b.category?.slug,
   };
 }
 
